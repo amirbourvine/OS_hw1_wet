@@ -136,3 +136,9 @@ void SmallShell::executeCommand(const char *cmd_line) {
   cmd->execute();
   // Please note that you must fork smash process for some commands (e.g., external commands....)
 }
+
+BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line) {
+}
+
+Command::Command(const char *cmd_line) {
+}
