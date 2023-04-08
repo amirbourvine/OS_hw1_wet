@@ -139,6 +139,3 @@ void SmallShell::executeCommand(const char *cmd_line) {
 
 BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line) {
 }
-
-Command::Command(const char *cmd_line) {
-}
