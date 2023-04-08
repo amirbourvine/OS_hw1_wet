@@ -125,9 +125,6 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   if (firstWord.compare("chprompt") == 0) {
     return new chpromptCommand(cmd_line, this);
   }
-  else {
-    return new ExternalCommand(cmd_line);
-  }
 
   return nullptr;
 }
