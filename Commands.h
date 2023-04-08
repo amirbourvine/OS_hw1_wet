@@ -167,6 +167,7 @@ class KillCommand : public BuiltInCommand {
 class SmallShell {
  private:
   // TODO: Add your data members
+  std::string msg;
   SmallShell();
  public:
   Command *CreateCommand(const char* cmd_line);
@@ -181,6 +182,18 @@ class SmallShell {
   ~SmallShell();
   void executeCommand(const char* cmd_line);
   // TODO: add extra methods as needed
+  void setMsg(std::string msg);
+  const std::string getMsg();
 };
+
+class chpromptCommand : public BuiltInCommand {
+    std::string msg;
+    SmallShell* smash;
+public:
+    chpromptCommand(const char* cmd_line, SmallShell* smash);
+    ~chpromptCommand() = default;
+    void execute() override;
+};
+
 
 #endif //SMASH_COMMAND_H_

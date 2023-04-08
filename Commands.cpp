@@ -7,6 +7,7 @@
 #include <iomanip>
 #include "Commands.h"
 
+
 using namespace std;
 
 const std::string WHITESPACE = " \n\r\t\f\v";
@@ -40,6 +41,7 @@ string _trim(const std::string& s)
 }
 
 int _parseCommandLine(const char* cmd_line, char** args) {
+    //puts the command then the parameters in args, and returns the number of thins it put in args
   FUNC_ENTRY()
   int i = 0;
   std::istringstream iss(_trim(string(cmd_line)).c_str());
@@ -77,10 +79,35 @@ void _removeBackgroundSign(char* cmd_line) {
   cmd_line[str.find_last_not_of(WHITESPACE, idx) + 1] = 0;
 }
 
-// TODO: Add your implementation for classes in Commands.h 
+// TODO: Add your implementation for classes in Commands.h
+chpromptCommand::chpromptCommand(const char *cmd_line, SmallShell* smash) : BuiltInCommand(cmd_line){
+    this->smash = smash;
+    char** args = new char*[20];
+    int num = _parseCommandLine(cmd_line, args);
+    if(num == 1){
+        this->msg = "smash";
+    }
+    else{
+        this->msg = args[1];
+    }
+    delete[] args;
+}
+
+void chpromptCommand::execute() {
+    this->smash->setMsg(this->msg);
+}
+
+void SmallShell::setMsg(const std::string msg) {
+    this->msg = msg;
+}
+
+const std::string SmallShell::getMsg() {
+    return this->msg;
+}
 
 SmallShell::SmallShell() {
 // TODO: add your implementation
+    this->msg = "smash";
 }
 
 SmallShell::~SmallShell() {
@@ -92,29 +119,23 @@ SmallShell::~SmallShell() {
 */
 Command * SmallShell::CreateCommand(const char* cmd_line) {
 	// For example:
-/*
   string cmd_s = _trim(string(cmd_line));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
-  if (firstWord.compare("pwd") == 0) {
-    return new GetCurrDirCommand(cmd_line);
+  if (firstWord.compare("chprompt") == 0) {
+    return new chpromptCommand(cmd_line, this);
   }
-  else if (firstWord.compare("showpid") == 0) {
-    return new ShowPidCommand(cmd_line);
-  }
-  else if ...
-  .....
   else {
     return new ExternalCommand(cmd_line);
   }
-  */
+
   return nullptr;
 }
 
 void SmallShell::executeCommand(const char *cmd_line) {
   // TODO: Add your implementation here
   // for example:
-  // Command* cmd = CreateCommand(cmd_line);
-  // cmd->execute();
+  Command* cmd = CreateCommand(cmd_line);
+  cmd->execute();
   // Please note that you must fork smash process for some commands (e.g., external commands....)
 }
