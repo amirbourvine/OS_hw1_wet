@@ -192,7 +192,7 @@ void JobsList::addJob(Command *cmd, bool isStopped) {
 }
 
 void JobsList::printJobsList() {
-    for(int i = 0; i<this->list.size(); i++){
+    for(int i = 0; i<int(this->list.size()); i++){
         cout << this->list[i]->toString() << endl;
     }
 }
