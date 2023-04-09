@@ -115,6 +115,7 @@ void GetCurrDirCommand::execute() {
 
 ChangeDirCommand::ChangeDirCommand(const char *cmd_line, SmallShell* smash) : BuiltInCommand(cmd_line){
     this->smash = smash;
+    this->change = false;
     char* args[20];
     int num = _parseCommandLine(cmd_line, args);
     if(num == 2){
@@ -130,11 +131,13 @@ ChangeDirCommand::ChangeDirCommand(const char *cmd_line, SmallShell* smash) : Bu
                 else {
                     this->last_dir = cwdir;
                     this->curr_dir = smash->getLastDir();
+                    this->change = true;
                 }
             }
             else {
                 this->last_dir = cwdir;
                 this->curr_dir = args[1];
+                this->change = true;
             }
         } else {
             perror("smash error: getcwd failed");
@@ -147,9 +150,11 @@ ChangeDirCommand::ChangeDirCommand(const char *cmd_line, SmallShell* smash) : Bu
 }
 
 void ChangeDirCommand::execute() {
-    this->smash->setLastDir(this->last_dir);
-    if(chdir((this->curr_dir).c_str()) == -1){
-        perror("smash error: chdir failed");
+    if(this->change) {
+        this->smash->setLastDir(this->last_dir);
+        if (chdir((this->curr_dir).c_str()) == -1) {
+            perror("smash error: chdir failed");
+        }
     }
 }
 

@@ -199,6 +199,7 @@ class ChangeDirCommand : public BuiltInCommand {
     SmallShell* smash;
     std::string last_dir;
     std::string curr_dir;
+    bool change;
 public:
     ChangeDirCommand(const char* cmd_line, SmallShell* smash);
     virtual ~ChangeDirCommand() {}
