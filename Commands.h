@@ -8,12 +8,15 @@
 
 class Command {
 // TODO: Add your data members
+ std::string cmd_line;
  public:
   Command(const char* cmd_line){
-
+      this->cmd_line = cmd_line;
   }
   virtual ~Command(){
-
+  }
+  std::string getCmdLine(){
+      return this->cmd_line;
   }
   virtual void execute() = 0;
   //virtual void prepare();
@@ -80,11 +83,41 @@ class JobsList {
  public:
   class JobEntry {
    // TODO: Add your data members
+  public:
+   int job_id;
+   std::string cmd_line;
+   pid_t pid;
+   time_t in_time;
+   bool stopped;
+
+   std::string toString(){
+       std::string str = "";
+       str += "[";
+       str += std::to_string(this->job_id);
+       str += "] ";
+       str += this->cmd_line;
+       str += " : ";
+       str += std::to_string(this->pid);
+       str += " ";
+       time_t temp = time(nullptr);
+       if(temp == ((time_t) -1)){
+           perror("smash error: time failed");
+           return "";
+       }
+       str += std::to_string(difftime(temp ,this->in_time));
+       str += " secs";
+       if(this->stopped){
+           str += " (stopped)";
+       }
+       return str;
+   }
   };
  // TODO: Add your data members
+ std::vector<JobEntry*> list;
+ int max_job_id;
  public:
   JobsList();
-  ~JobsList();
+  ~JobsList() = default;
   void addJob(Command* cmd, bool isStopped = false);
   void printJobsList();
   void killAllJobs();
@@ -94,14 +127,6 @@ class JobsList {
   JobEntry * getLastJob(int* lastJobId);
   JobEntry *getLastStoppedJob(int *jobId);
   // TODO: Add extra methods or modify exisitng ones as needed
-};
-
-class JobsCommand : public BuiltInCommand {
- // TODO: Add your data members
- public:
-  JobsCommand(const char* cmd_line, JobsList* jobs);
-  virtual ~JobsCommand() {}
-  void execute() override;
 };
 
 class ForegroundCommand : public BuiltInCommand {
@@ -166,6 +191,7 @@ class SmallShell {
   // TODO: Add your data members
   std::string msg;
   std::string last_dir;
+  JobsList* jobs_list;
   SmallShell();
  public:
   Command *CreateCommand(const char* cmd_line);
@@ -203,6 +229,15 @@ class ChangeDirCommand : public BuiltInCommand {
 public:
     ChangeDirCommand(const char* cmd_line, SmallShell* smash);
     virtual ~ChangeDirCommand() {}
+    void execute() override;
+};
+
+class JobsCommand : public BuiltInCommand {
+    // TODO: Add your data members
+    JobsList* jobs;
+public:
+    JobsCommand(const char* cmd_line, JobsList* jobs);
+    virtual ~JobsCommand() {}
     void execute() override;
 };
 

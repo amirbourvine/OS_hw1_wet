@@ -160,6 +160,51 @@ void ChangeDirCommand::execute() {
     }
 }
 
+JobsList::JobsList() {
+    this->list = std::vector<JobEntry*>();
+    this->max_job_id = 0;
+}
+
+void JobsList::addJob(Command *cmd, bool isStopped) {
+    JobEntry* je = new JobEntry();
+    this->max_job_id = this->max_job_id+1;
+    je->job_id = this->max_job_id;
+    je->cmd_line = cmd->getCmdLine();
+    time_t temp = time(nullptr);
+    if(temp == ((time_t) -1)){
+        perror("smash error: time failed");
+        return;
+    }
+    else{
+        je->in_time = temp;
+    }
+    pid_t pid = getpid();
+    if(pid == -1){
+        perror("smash error: getpid failed");
+        return;
+    }
+    else{
+        je->pid = pid;
+    }
+    je->stopped = isStopped;
+
+    this->list.push_back(je);
+}
+
+void JobsList::printJobsList() {
+    for(int i = 0; i<this->list.size(); i++){
+        cout << this->list[i]->toString() << endl;
+    }
+}
+
+JobsCommand::JobsCommand(const char *cmd_line, JobsList* jobs) : BuiltInCommand(cmd_line){
+    this->jobs = jobs;
+}
+
+void JobsCommand::execute() {
+    this->jobs->printJobsList();
+}
+
 void SmallShell::setMsg(const std::string msg) {
     this->msg = msg;
 }
@@ -180,6 +225,7 @@ SmallShell::SmallShell() {
 // TODO: add your implementation
     this->msg = "smash";
     this->last_dir = "";
+    this->jobs_list = new JobsList();
 }
 
 SmallShell::~SmallShell() {
@@ -203,9 +249,12 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   if (firstWord.compare("pwd") == 0) {
       return new GetCurrDirCommand(cmd_line);
   }
-    if (firstWord.compare("cd") == 0) {
-        return new ChangeDirCommand(cmd_line, this);
-    }
+  if (firstWord.compare("cd") == 0) {
+      return new ChangeDirCommand(cmd_line, this);
+  }
+  if (firstWord.compare("jobs") == 0) {
+      return new JobsCommand(cmd_line, this->jobs_list);
+  }
   return nullptr;
 }
 
