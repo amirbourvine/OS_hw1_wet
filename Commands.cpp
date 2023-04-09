@@ -173,10 +173,6 @@ const std::string SmallShell::getLastDir() {
 }
 
 void SmallShell::setLastDir(const std::string last_dir) {
-    std::string str = last_dir;
-    cout << "1" << endl;
-    this->last_dir = "hello";
-    cout << "2" << endl;
     this->last_dir = last_dir;
 }
 
