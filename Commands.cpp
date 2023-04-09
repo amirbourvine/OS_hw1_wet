@@ -100,7 +100,7 @@ void chpromptCommand::execute() {
 ShowPidCommand::ShowPidCommand(const char *cmd_line) : BuiltInCommand(cmd_line){}
 
 void ShowPidCommand::execute() {
-    cout << "smash pid is " << getpid();
+    cout << "smash pid is " << getpid()<<endl;
 }
 
 void SmallShell::setMsg(const std::string msg) {
