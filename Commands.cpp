@@ -106,7 +106,7 @@ void ShowPidCommand::execute() {
 GetCurrDirCommand::GetCurrDirCommand(const char *cmd_line) : BuiltInCommand(cmd_line) {}
 
 void GetCurrDirCommand::execute() {
-    char cwd[PATH_MAX];
+    char cwd[INT8_MAX];
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
         cout << cwd << endl;
     } else {
