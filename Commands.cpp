@@ -135,6 +135,7 @@ ChangeDirCommand::ChangeDirCommand(const char *cmd_line, SmallShell* smash) : Bu
                 }
             }
             else {
+                cout << "HERE1" << endl;
                 this->last_dir = cwdir;
                 this->curr_dir = args[1];
                 this->change = true;
@@ -150,8 +151,10 @@ ChangeDirCommand::ChangeDirCommand(const char *cmd_line, SmallShell* smash) : Bu
 }
 
 void ChangeDirCommand::execute() {
+    cout << "HERE2" << endl;
     if(this->change) {
         this->smash->setLastDir(this->last_dir);
+        cout << "HERE3" << endl;
         if (chdir((this->curr_dir).c_str()) == -1) {
             perror("smash error: chdir failed");
         }
