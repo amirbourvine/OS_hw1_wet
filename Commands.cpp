@@ -116,6 +116,8 @@ void GetCurrDirCommand::execute() {
 ChangeDirCommand::ChangeDirCommand(const char *cmd_line, SmallShell* smash) : BuiltInCommand(cmd_line){
     this->smash = smash;
     this->change = false;
+    this->last_dir = "";
+    this->curr_dir = "";
     char* args[20];
     int num = _parseCommandLine(cmd_line, args);
     if(num == 2){
