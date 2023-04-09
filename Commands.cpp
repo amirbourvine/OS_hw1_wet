@@ -83,9 +83,7 @@ void _removeBackgroundSign(char* cmd_line) {
 chpromptCommand::chpromptCommand(const char *cmd_line, SmallShell* smash) : BuiltInCommand(cmd_line){
     this->smash = smash;
     char* args[20];
-    char* cmd = strdup(cmd_line);
-    _removeBackgroundSign(cmd);
-    int num = _parseCommandLine(cmd, args);
+    int num = _parseCommandLine(cmd_line, args);
     if(num == 1){
         this->msg = "smash";
     }
@@ -121,9 +119,7 @@ ChangeDirCommand::ChangeDirCommand(const char *cmd_line, SmallShell* smash) : Bu
     this->last_dir = "";
     this->curr_dir = "";
     char* args[20];
-    char* cmd = strdup(cmd_line);
-    _removeBackgroundSign(cmd);
-    int num = _parseCommandLine(cmd, args);
+    int num = _parseCommandLine(cmd_line, args);
     if(num == 2){
         std::string temp = args[1];
         char cwd[INT8_MAX];
@@ -240,8 +236,10 @@ SmallShell::~SmallShell() {
 * Creates and returns a pointer to Command class which matches the given command line (cmd_line)
 */
 Command * SmallShell::CreateCommand(const char* cmd_line) {
-	// For example:
-  string cmd_s = _trim(string(cmd_line));
+    // For example:
+    char* cmd = strdup(cmd_line);
+    _removeBackgroundSign(cmd);//lose &- works only for built-in atm
+  string cmd_s = _trim(string(cmd));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
   if (firstWord.compare("chprompt") == 0) {
