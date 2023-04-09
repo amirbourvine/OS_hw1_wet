@@ -97,6 +97,12 @@ void chpromptCommand::execute() {
     this->smash->setMsg(this->msg);
 }
 
+ShowPidCommand::ShowPidCommand(const char *cmd_line) : BuiltInCommand(cmd_line){}
+
+void ShowPidCommand::execute() {
+    cout << "smash pid is " << getpid();
+}
+
 void SmallShell::setMsg(const std::string msg) {
     this->msg = msg;
 }
@@ -125,7 +131,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   if (firstWord.compare("chprompt") == 0) {
     return new chpromptCommand(cmd_line, this);
   }
-
+  if (firstWord.compare("showpid") == 0) {
+      return new ShowPidCommand(cmd_line);
+  }
   return nullptr;
 }
 
