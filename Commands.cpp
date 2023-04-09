@@ -103,6 +103,17 @@ void ShowPidCommand::execute() {
     cout << "smash pid is " << getpid()<<endl;
 }
 
+GetCurrDirCommand::GetCurrDirCommand(const char *cmd_line) : BuiltInCommand(cmd_line) {}
+
+void GetCurrDirCommand::execute() {
+    char cwd[PATH_MAX];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        cout << cwd << endl;
+    } else {
+        perror("smash error: getcwd failed");
+    }
+}
+
 void SmallShell::setMsg(const std::string msg) {
     this->msg = msg;
 }
@@ -134,6 +145,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   if (firstWord.compare("showpid") == 0) {
       return new ShowPidCommand(cmd_line);
   }
+    if (firstWord.compare("pwd") == 0) {
+        return new GetCurrDirCommand(cmd_line);
+    }
   return nullptr;
 }
 
