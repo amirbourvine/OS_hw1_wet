@@ -164,8 +164,8 @@ class KillCommand : public BuiltInCommand {
 class SmallShell {
  private:
   // TODO: Add your data members
-  std::string msg;
   std::string last_dir;
+  std::string msg;
   SmallShell();
  public:
   Command *CreateCommand(const char* cmd_line);
