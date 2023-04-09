@@ -83,7 +83,9 @@ void _removeBackgroundSign(char* cmd_line) {
 chpromptCommand::chpromptCommand(const char *cmd_line, SmallShell* smash) : BuiltInCommand(cmd_line){
     this->smash = smash;
     char* args[20];
-    int num = _parseCommandLine(cmd_line, args);
+    char* cmd = strdup(cmd_line);
+    _removeBackgroundSign(cmd);
+    int num = _parseCommandLine(cmd, args);
     if(num == 1){
         this->msg = "smash";
     }
@@ -119,7 +121,9 @@ ChangeDirCommand::ChangeDirCommand(const char *cmd_line, SmallShell* smash) : Bu
     this->last_dir = "";
     this->curr_dir = "";
     char* args[20];
-    int num = _parseCommandLine(cmd_line, args);
+    char* cmd = strdup(cmd_line);
+    _removeBackgroundSign(cmd);
+    int num = _parseCommandLine(cmd, args);
     if(num == 2){
         std::string temp = args[1];
         char cwd[INT8_MAX];
