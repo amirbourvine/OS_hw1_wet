@@ -52,13 +52,6 @@ class RedirectionCommand : public Command {
   //void cleanup() override;
 };
 
-class ChangeDirCommand : public BuiltInCommand {
-// TODO: Add your data members public:
-  ChangeDirCommand(const char* cmd_line, char** plastPwd);
-  virtual ~ChangeDirCommand() {}
-  void execute() override;
-};
-
 class GetCurrDirCommand : public BuiltInCommand {
  public:
   GetCurrDirCommand(const char* cmd_line);
@@ -172,6 +165,7 @@ class SmallShell {
  private:
   // TODO: Add your data members
   std::string msg;
+  std::string last_dir;
   SmallShell();
  public:
   Command *CreateCommand(const char* cmd_line);
@@ -188,6 +182,8 @@ class SmallShell {
   // TODO: add extra methods as needed
   void setMsg(std::string msg);
   const std::string getMsg();
+  void setLastDir(std::string last_dir);
+  const std::string getLastDir();
 };
 
 class chpromptCommand : public BuiltInCommand {
@@ -199,5 +195,14 @@ public:
     void execute() override;
 };
 
+class ChangeDirCommand : public BuiltInCommand {
+    SmallShell* smash;
+    std::string last_dir;
+    std::string curr_dir;
+public:
+    ChangeDirCommand(const char* cmd_line, SmallShell* smash);
+    virtual ~ChangeDirCommand() {}
+    void execute() override;
+};
 
 #endif //SMASH_COMMAND_H_

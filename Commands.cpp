@@ -82,7 +82,7 @@ void _removeBackgroundSign(char* cmd_line) {
 // TODO: Add your implementation for classes in Commands.h
 chpromptCommand::chpromptCommand(const char *cmd_line, SmallShell* smash) : BuiltInCommand(cmd_line){
     this->smash = smash;
-    char** args = new char*[20];
+    char* args[20];
     int num = _parseCommandLine(cmd_line, args);
     if(num == 1){
         this->msg = "smash";
@@ -90,7 +90,6 @@ chpromptCommand::chpromptCommand(const char *cmd_line, SmallShell* smash) : Buil
     else{
         this->msg = args[1];
     }
-    delete[] args;
 }
 
 void chpromptCommand::execute() {
@@ -114,6 +113,46 @@ void GetCurrDirCommand::execute() {
     }
 }
 
+ChangeDirCommand::ChangeDirCommand(const char *cmd_line, SmallShell* smash) : BuiltInCommand(cmd_line){
+    this->smash = smash;
+    char* args[20];
+    int num = _parseCommandLine(cmd_line, args);
+    if(num == 2){
+        std::string temp = args[1];
+        char cwd[INT8_MAX];
+        if (getcwd(cwd, sizeof(cwd)) != NULL) {
+            std::string cwdir = cwd;
+            if(temp.compare("-") == 0){
+                if(smash->getLastDir().compare("")==0){
+                    cerr << "smash error: cd: OLDPWD not set" << endl;
+                    return;
+                }
+                else {
+                    this->last_dir = cwdir;
+                    this->curr_dir = smash->getLastDir();
+                }
+            }
+            else {
+                this->last_dir = cwdir;
+                this->curr_dir = args[1];
+            }
+        } else {
+            perror("smash error: getcwd failed");
+            return;
+        }
+    }
+    if(num>2){
+        cerr << "smash error: cd: too many arguments"<<endl;
+    }
+}
+
+void ChangeDirCommand::execute() {
+    this->smash->setLastDir(this->last_dir);
+    if(chdir((this->curr_dir).c_str()) == -1){
+        perror("smash error: chdir failed");
+    }
+}
+
 void SmallShell::setMsg(const std::string msg) {
     this->msg = msg;
 }
@@ -122,9 +161,18 @@ const std::string SmallShell::getMsg() {
     return this->msg;
 }
 
+const std::string SmallShell::getLastDir() {
+    return this->last_dir;
+}
+
+void SmallShell::setLastDir(std::string last_dir) {
+    this->last_dir = last_dir;
+}
+
 SmallShell::SmallShell() {
 // TODO: add your implementation
     this->msg = "smash";
+    this->last_dir = "";
 }
 
 SmallShell::~SmallShell() {
@@ -145,8 +193,11 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   if (firstWord.compare("showpid") == 0) {
       return new ShowPidCommand(cmd_line);
   }
-    if (firstWord.compare("pwd") == 0) {
-        return new GetCurrDirCommand(cmd_line);
+  if (firstWord.compare("pwd") == 0) {
+      return new GetCurrDirCommand(cmd_line);
+  }
+    if (firstWord.compare("cd") == 0) {
+        return new ChangeDirCommand(cmd_line, this);
     }
   return nullptr;
 }
