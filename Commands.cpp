@@ -233,13 +233,7 @@ void ExternalCommand::execute() {
         if(this->isback){//back
             pid_t pid = fork();
             if(pid==0){//son
-                char* cmd = strdup(this->getCmdLine().c_str());
-                _removeBackgroundSign(cmd);//lose &
-                string cmd_s = _trim(string(cmd));
-                size_t start = cmd_s.find_first_of("\"");
-                size_t finish = cmd_s.find_last_of("\"");
-                const char* str = cmd_s.substr(start+1, finish-start-1).c_str();
-                num = execlp("/bin/bash", "/bin/bash", "-c", str, nullptr);
+                num = execlp("/bin/bash", "/bin/bash", "-c", this->getCmdLine().c_str(), nullptr);
                 if(num==-1)
                     perror("smash error: execvp failed");
                 return;
@@ -252,13 +246,7 @@ void ExternalCommand::execute() {
         else{//front
             pid_t pid = fork();
             if(pid==0){//son
-                char* cmd = strdup(this->getCmdLine().c_str());
-                _removeBackgroundSign(cmd);//lose &
-                string cmd_s = _trim(string(cmd));
-                size_t start = cmd_s.find_first_of("\"");
-                size_t finish = cmd_s.find_last_of("\"");
-                const char* str = cmd_s.substr(start+1, finish-start-1).c_str();
-                num = execlp("/bin/bash", "/bin/bash", "-c", str, nullptr);
+                num = execlp("/bin/bash", "/bin/bash", "-c", this->getCmdLine().c_str(), nullptr);
                 if(num==-1)
                     perror("smash error: execvp failed");
                 return;
