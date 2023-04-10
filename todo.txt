@@ -1,5 +1,2 @@
-now move on to external to be able to check
-check jobs command- need external
+external: clean jobs list when needed
 then continue built-in from 6
-
-external: when are commands that are run in the background freed (using wait)?
