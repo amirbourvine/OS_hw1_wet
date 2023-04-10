@@ -239,7 +239,7 @@ void ExternalCommand::execute() {
                 size_t start = cmd_s.find_first_of("\"");
                 size_t finish = cmd_s.find_last_of("\"");
                 const char* str = cmd_s.substr(start+1, finish-start-1).c_str();
-                execlp("/bin/bash", "/bin/bash", "-c", str, nullptr);
+                num = execlp("/bin/bash", "/bin/bash", "-c", str, nullptr);
                 if(num==-1)
                     perror("smash error: execvp failed");
                 return;
@@ -258,7 +258,7 @@ void ExternalCommand::execute() {
                 size_t start = cmd_s.find_first_of("\"");
                 size_t finish = cmd_s.find_last_of("\"");
                 const char* str = cmd_s.substr(start+1, finish-start-1).c_str();
-                execlp("/bin/bash", "/bin/bash", "-c", str, nullptr);
+                num = execlp("/bin/bash", "/bin/bash", "-c", str, nullptr);
                 if(num==-1)
                     perror("smash error: execvp failed");
                 return;
