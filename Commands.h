@@ -97,7 +97,7 @@ class JobsList {
            perror("smash error: time failed");
            return "";
        }
-       str += std::to_string(difftime(temp ,this->in_time));
+       str += std::to_string(int(difftime(temp ,this->in_time)));
        str += " secs";
        if(this->stopped){
            str += " (stopped)";
