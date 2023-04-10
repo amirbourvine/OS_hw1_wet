@@ -41,7 +41,7 @@ string _trim(const std::string& s)
 }
 
 int _parseCommandLine(const char* cmd_line, char** args) {
-    //puts the command then the parameters in args, and returns the number of thins it put in args
+    //puts the command then the parameters in args, and returns the number of things it put in args
   FUNC_ENTRY()
   int i = 0;
   std::istringstream iss(_trim(string(cmd_line)).c_str());
@@ -205,6 +205,103 @@ void JobsCommand::execute() {
     this->jobs->printJobsList();
 }
 
+ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash) : Command(cmd_line){
+    this->isback = _isBackgroundComamnd(cmd_line);
+    this->smash = smash;
+
+    char* cmd = strdup(cmd_line);
+    _removeBackgroundSign(cmd);//lose &
+    string cmd_s = _trim(string(cmd));
+    this->command = cmd_s.substr(0, cmd_s.find_first_of(" \n")).c_str();
+
+    this->args = new char*[20];
+    _parseCommandLine(cmd, this->args);//without the &
+
+    this->iscomplex =false;
+    std::string temp = cmd_line;
+    for(int i = 0; i<(int)temp.size(); i++){
+        if(temp[i] == '?' or temp[i] == '*'){
+            this->iscomplex = true;
+            return;
+        }
+    }
+}
+
+void ExternalCommand::execute() {
+    int num;
+    if(this->iscomplex){//complex
+        if(this->isback){//back
+            pid_t pid = fork();
+            if(pid==0){//son
+                char* cmd = strdup(this->getCmdLine().c_str());
+                _removeBackgroundSign(cmd);//lose &
+                string cmd_s = _trim(string(cmd));
+                size_t start = cmd_s.find_first_of("\"");
+                size_t finish = cmd_s.find_last_of("\"");
+                const char* str = cmd_s.substr(start+1, finish-start-1).c_str();
+                execlp("/bin/bash", "/bin/bash", "-c", str, nullptr);
+                if(num==-1)
+                    perror("smash error: execvp failed");
+                return;
+            }
+            else{//father
+                this->smash->add_job(this);
+                return;
+            }
+        }
+        else{//front
+            pid_t pid = fork();
+            if(pid==0){//son
+                char* cmd = strdup(this->getCmdLine().c_str());
+                _removeBackgroundSign(cmd);//lose &
+                string cmd_s = _trim(string(cmd));
+                size_t start = cmd_s.find_first_of("\"");
+                size_t finish = cmd_s.find_last_of("\"");
+                const char* str = cmd_s.substr(start+1, finish-start-1).c_str();
+                execlp("/bin/bash", "/bin/bash", "-c", str, nullptr);
+                if(num==-1)
+                    perror("smash error: execvp failed");
+                return;
+            }
+            else{//father
+                waitpid(pid, NULL);
+                return;
+            }
+        }
+    }
+    else{//simple
+        if(this->isback){//back
+            pid_t pid = fork();
+            if(pid==0){//son
+                num = execvp(this->command, this->args);
+                if(num==-1)
+                    perror("smash error: execvp failed");
+                return;
+            }
+            else{//father
+                this->smash->add_job(this);
+                return;
+            }
+        }
+        else{//front
+            pid_t pid = fork();
+            if(pid==0){//son
+                num = execvp(this->command, this->args);
+                if(num==-1)
+                    perror("smash error: execvp failed");
+                return;
+            }
+            else{//father
+                waitpid(pid, NULL);
+                return;
+            }
+        }
+    }
+}
+
+void SmallShell::add_job(Command *cmd, bool isStopped) {
+    this->jobs_list->addJob(cmd, isStopped);
+}
 void SmallShell::setMsg(const std::string msg) {
     this->msg = msg;
 }
@@ -237,10 +334,13 @@ SmallShell::~SmallShell() {
 */
 Command * SmallShell::CreateCommand(const char* cmd_line) {
     // For example:
+
     char* cmd = strdup(cmd_line);
-    _removeBackgroundSign(cmd);//lose &- works only for built-in atm
+    _removeBackgroundSign(cmd);//lose &
   string cmd_s = _trim(string(cmd));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
+
+    //built-in commands
 
   if (firstWord.compare("chprompt") == 0) {
     return new chpromptCommand(cmd_line, this);
@@ -257,7 +357,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   if (firstWord.compare("jobs") == 0) {
       return new JobsCommand(cmd_line, this->jobs_list);
   }
-  return nullptr;
+
+    //external commands
+    return new ExternalCommand(cmd_line, this);
 }
 
 void SmallShell::executeCommand(const char *cmd_line) {

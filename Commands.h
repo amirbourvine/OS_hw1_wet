@@ -30,13 +30,6 @@ class BuiltInCommand : public Command {
   virtual ~BuiltInCommand() {}
 };
 
-class ExternalCommand : public Command {
- public:
-  ExternalCommand(const char* cmd_line);
-  virtual ~ExternalCommand() {}
-  void execute() override;
-};
-
 class PipeCommand : public Command {
   // TODO: Add your data members
  public:
@@ -210,6 +203,7 @@ class SmallShell {
   const std::string getMsg();
   void setLastDir(std::string last_dir);
   const std::string getLastDir();
+  void add_job(Command* cmd, bool isStopped = false);
 };
 
 class chpromptCommand : public BuiltInCommand {
@@ -238,6 +232,18 @@ class JobsCommand : public BuiltInCommand {
 public:
     JobsCommand(const char* cmd_line, JobsList* jobs);
     virtual ~JobsCommand() {}
+    void execute() override;
+};
+
+class ExternalCommand : public Command {
+    const char* command;
+    char** args;
+    bool isback;
+    bool iscomplex;
+    SmallShell* smash;
+public:
+    ExternalCommand(const char* cmd_line, SmallShell* smash);
+    virtual ~ExternalCommand() {}
     void execute() override;
 };
 
