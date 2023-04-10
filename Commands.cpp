@@ -165,7 +165,7 @@ JobsList::JobsList() {
     this->max_job_id = 0;
 }
 
-void JobsList::addJob(Command *cmd, bool isStopped) {
+void JobsList::addJob(Command *cmd, pid_t pid, bool isStopped) {
     JobEntry* je = new JobEntry();
     this->max_job_id = this->max_job_id+1;
     je->job_id = this->max_job_id;
@@ -178,14 +178,7 @@ void JobsList::addJob(Command *cmd, bool isStopped) {
     else{
         je->in_time = temp;
     }
-    pid_t pid = getpid();
-    if(pid == -1){
-        perror("smash error: getpid failed");
-        return;
-    }
-    else{
-        je->pid = pid;
-    }
+    je->pid = pid;
     je->stopped = isStopped;
 
     this->list.push_back(je);
@@ -239,7 +232,7 @@ void ExternalCommand::execute() {
                 return;
             }
             else{//father
-                this->smash->add_job(this);
+                this->smash->add_job(this, pid);
                 return;
             }
         }
@@ -267,7 +260,7 @@ void ExternalCommand::execute() {
                 return;
             }
             else{//father
-                this->smash->add_job(this);
+                this->smash->add_job(this, pid);
                 return;
             }
         }
@@ -287,8 +280,8 @@ void ExternalCommand::execute() {
     }
 }
 
-void SmallShell::add_job(Command *cmd, bool isStopped) {
-    this->jobs_list->addJob(cmd, isStopped);
+void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
+    this->jobs_list->addJob(cmd, pid, isStopped);
 }
 void SmallShell::setMsg(const std::string msg) {
     this->msg = msg;

@@ -111,7 +111,7 @@ class JobsList {
  public:
   JobsList();
   ~JobsList() = default;
-  void addJob(Command* cmd, bool isStopped = false);
+  void addJob(Command* cmd, pid_t pid, bool isStopped = false);
   void printJobsList();
   void killAllJobs();
   void removeFinishedJobs();
@@ -203,7 +203,7 @@ class SmallShell {
   const std::string getMsg();
   void setLastDir(std::string last_dir);
   const std::string getLastDir();
-  void add_job(Command* cmd, bool isStopped = false);
+  void add_job(Command* cmd, pid_t pid, bool isStopped = false);
 };
 
 class chpromptCommand : public BuiltInCommand {
