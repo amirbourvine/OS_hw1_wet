@@ -264,7 +264,7 @@ void ExternalCommand::execute() {
                 return;
             }
             else{//father
-                waitpid(pid, NULL);
+                waitpid(pid, NULL, 0);
                 return;
             }
         }
@@ -292,7 +292,7 @@ void ExternalCommand::execute() {
                 return;
             }
             else{//father
-                waitpid(pid, NULL);
+                waitpid(pid, NULL, 0);
                 return;
             }
         }
