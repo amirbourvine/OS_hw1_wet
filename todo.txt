@@ -1,3 +1,4 @@
-continue built-in from 6
-special
+finish built-in
 signals
+check built-in func bg (needs signals- cntrl-Z)
+special
