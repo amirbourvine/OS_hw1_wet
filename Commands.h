@@ -71,42 +71,42 @@ public:
   void execute() override;
 };
 
+class JobEntry {
+    // TODO: Add your data members
+public:
+    int job_id;
+    std::string cmd_line;
+    pid_t pid;
+    time_t in_time;
+    bool stopped;
+
+    std::string toString(bool wo_time = false){
+        std::string str = "";
+        str += "[";
+        str += std::to_string(this->job_id);
+        str += "] ";
+        str += this->cmd_line;
+        str += " : ";
+        str += std::to_string(this->pid);
+        if(wo_time)
+            return str;
+        str += " ";
+        time_t temp = time(nullptr);
+        if(temp == ((time_t) -1)){
+            perror("smash error: time failed");
+            return "";
+        }
+        str += std::to_string(int(difftime(temp ,this->in_time)));
+        str += " secs";
+        if(this->stopped){
+            str += " (stopped)";
+        }
+        return str;
+    }
+};
 
 class JobsList {
  public:
-  class JobEntry {
-   // TODO: Add your data members
-  public:
-   int job_id;
-   std::string cmd_line;
-   pid_t pid;
-   time_t in_time;
-   bool stopped;
-
-   std::string toString(bool wo_time = false){
-       std::string str = "";
-       str += "[";
-       str += std::to_string(this->job_id);
-       str += "] ";
-       str += this->cmd_line;
-       str += " : ";
-       str += std::to_string(this->pid);
-       if(wo_time)
-           return str;
-       str += " ";
-       time_t temp = time(nullptr);
-       if(temp == ((time_t) -1)){
-           perror("smash error: time failed");
-           return "";
-       }
-       str += std::to_string(int(difftime(temp ,this->in_time)));
-       str += " secs";
-       if(this->stopped){
-           str += " (stopped)";
-       }
-       return str;
-   }
-  };
  // TODO: Add your data members
  std::vector<JobEntry*> list;
  int max_job_id;
@@ -121,6 +121,8 @@ class JobsList {
   void removeJobById(int jobId);
   JobEntry * getLastJob(int* lastJobId);
   JobEntry *getLastStoppedJob(int *jobId);
+  bool exsits(int jobid);
+  int maxJobId();
   // TODO: Add extra methods or modify exisitng ones as needed
 };
 
@@ -245,6 +247,7 @@ public:
 class ForegroundCommand : public BuiltInCommand {
     // TODO: Add your data members
     JobsList* list;
+    int job_id;
 public:
     ForegroundCommand(const char* cmd_line, JobsList* jobs);
     virtual ~ForegroundCommand() {}

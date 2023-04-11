@@ -228,6 +228,26 @@ void JobsList::removeFinishedJobs() {
     //max job id is updated in removeJobById()
 }
 
+bool JobsList::exsits(int jobid) {
+    for(int i = 0; i<int(this->list.size()); i++){
+        if(jobid == this->list[i]->job_id)
+            return true;
+    }
+    return false;
+}
+
+int JobsList::maxJobId() {
+    return this->max_job_id;
+}
+
+JobEntry *JobsList::getJobById(int jobId) {
+    for(int i = 0; i<int(this->list.size()); i++){
+        if(jobId == this->list[i]->job_id)
+            return this->list[i];
+    }
+    return nullptr;
+}
+
 JobsCommand::JobsCommand(const char *cmd_line, JobsList* jobs) : BuiltInCommand(cmd_line){
     this->jobs = jobs;
 }
@@ -239,10 +259,45 @@ void JobsCommand::execute() {
 
 ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line){
     this->list = jobs;
+    char* args[20];
+    char* cmd = strdup(cmd_line);
+    _removeBackgroundSign(cmd);//lose &
+    int num = _parseCommandLine(cmd, args);
+    if(num == 1){
+        if(jobs->maxJobId() == 0){
+            cerr << "smash error: fg: jobs list is empty" << endl;
+        }
+        else{
+            this->job_id = jobs->maxJobId();
+        }
+        return;
+    }
+    if(num == 2){
+        int jobid = stoi(args[1]);
+        if(jobs->exsits(jobid)){
+            this->job_id = jobid;
+        }
+        else{
+            std::string str = "smash error: fg: job-id ";
+            str += args[1];
+            str += " does not exist";
+            cerr << str << endl;
+        }
+        return;
+    }
+    cerr << "smash error: fg: invalid arguments" << endl;
 }
 
 void ForegroundCommand::execute() {
-
+    JobEntry* job = this->list->getJobById(this->job_id);
+    cout << job->toString(true);
+    int err = kill(job->pid, SIGCONT);
+    if(err == -1){
+        perror("smash error: kill failed");
+        return;
+    }
+    this->list->removeJobById(this->job_id);
+    waitpid(job->pid, NULL, 0);
 }
 
 ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash) : Command(cmd_line){
@@ -394,6 +449,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   if (firstWord.compare("jobs") == 0) {
       return new JobsCommand(cmd_line, this->jobs_list);
   }
+    if (firstWord.compare("fg") == 0) {
+        return new ForegroundCommand(cmd_line, this->jobs_list);
+    }
 
     //external commands
     return new ExternalCommand(cmd_line, this);
