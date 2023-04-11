@@ -82,14 +82,18 @@ public:
 
     std::string toString(bool wo_time = false){
         std::string str = "";
+        if(wo_time) {
+            str += this->cmd_line;
+            str += " : ";
+            str += std::to_string(this->pid);
+            return str;
+        }
         str += "[";
         str += std::to_string(this->job_id);
         str += "] ";
         str += this->cmd_line;
         str += " : ";
         str += std::to_string(this->pid);
-        if(wo_time)
-            return str;
         str += " ";
         time_t temp = time(nullptr);
         if(temp == ((time_t) -1)){
