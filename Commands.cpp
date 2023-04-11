@@ -413,6 +413,10 @@ KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(
     int num = _parseCommandLine(cmd, args);
     if(num == 3){
         this->job_id = stoi(args[2]);
+        if(!jobs->exsits(this->job_id)){
+            cerr << "smash error: kill: job-id" << std::to_string(this->job_id) <<" does not exist" << endl;
+            return;
+        }
         std::string str = args[1];
         if(str[0] != '-'){
             cerr << "smash error: kill: invalid arguments" << endl;
