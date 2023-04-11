@@ -65,6 +65,8 @@ class ShowPidCommand : public BuiltInCommand {
 class JobsList;
 class QuitCommand : public BuiltInCommand {
 // TODO: Add your data members
+JobsList* list;
+bool iskill;
 public:
   QuitCommand(const char* cmd_line, JobsList* jobs);
   virtual ~QuitCommand() {}
@@ -105,6 +107,14 @@ public:
         if(this->stopped){
             str += " (stopped)";
         }
+        return str;
+    }
+
+    std::string toString_Kill(){
+        std::string str = "";
+        str += std::to_string(this->pid);
+        str += ": ";
+        str += this->cmd_line;
         return str;
     }
 };

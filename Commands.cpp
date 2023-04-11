@@ -260,6 +260,22 @@ JobEntry *JobsList::getLastStoppedJob() {
         return this->getJobById(max_id);
 }
 
+void JobsList::killAllJobs() {
+    std::string str = "smash: sending SIGKILL signal to ";
+    str += std::to_string(int(this->list.size()));
+    str +=  "jobs:";
+    cout << str << endl;
+
+    for(int i = 0; i<int(this->list.size()); i++){
+        cout << this->list[i]->toString_Kill() << endl;
+        int err = kill(this->list[i]->pid, SIGKILL);
+        if(err == -1){
+            perror("smash error: kill failed");
+            return;
+        }
+    }
+}
+
 JobsCommand::JobsCommand(const char *cmd_line, JobsList* jobs) : BuiltInCommand(cmd_line){
     this->jobs = jobs;
 }
@@ -298,6 +314,18 @@ ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : Bui
         return;
     }
     cerr << "smash error: fg: invalid arguments" << endl;
+}
+
+void ForegroundCommand::execute() {
+    JobEntry* job = this->list->getJobById(this->job_id);
+    cout << job->toString(true) << endl;
+    int err = kill(job->pid, SIGCONT);
+    if(err == -1){
+        perror("smash error: kill failed");
+        return;
+    }
+    this->list->removeJobById(this->job_id);
+    waitpid(job->pid, NULL, 0);
 }
 
 BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line){
@@ -351,19 +379,31 @@ void BackgroundCommand::execute() {
     job->stopped = false;
 }
 
-void ForegroundCommand::execute() {
-    JobEntry* job = this->list->getJobById(this->job_id);
-    cout << job->toString(true) << endl;
-    int err = kill(job->pid, SIGCONT);
-    if(err == -1){
-        perror("smash error: kill failed");
+QuitCommand::QuitCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line) {
+    this->list = jobs;
+    char* args[20];
+    char* cmd = strdup(cmd_line);
+    _removeBackgroundSign(cmd);//lose &
+    int num = _parseCommandLine(cmd, args);
+    if(num == 1){
+        this->iskill = false;
         return;
     }
-    this->list->removeJobById(this->job_id);
-    waitpid(job->pid, NULL, 0);
+    std::string str = args[1];
+    if (str.compare("kill") == 0) {
+        this->iskill = true;
+    }
+    else{
+        this->iskill = false;
+    }
 }
 
-
+void QuitCommand::execute() {
+    if(this->iskill){
+        this->list->killAllJobs();
+    }
+    exit(1);
+}
 
 ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash) : Command(cmd_line){
     this->isback = _isBackgroundComamnd(cmd_line);
@@ -520,6 +560,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   if (firstWord.compare("bg") == 0) {
       return new BackgroundCommand(cmd_line, this->jobs_list);
   }
+    if (firstWord.compare("quit") == 0) {
+        return new QuitCommand(cmd_line, this->jobs_list);
+    }
 
     //external commands
     return new ExternalCommand(cmd_line, this);
