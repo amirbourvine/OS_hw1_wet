@@ -174,6 +174,9 @@ class SetcoreCommand : public BuiltInCommand {
 
 class KillCommand : public BuiltInCommand {
  // TODO: Add your data members
+ JobsList* list;
+ int job_id;
+ int sig_num;
  public:
   KillCommand(const char* cmd_line, JobsList* jobs);
   virtual ~KillCommand() {}

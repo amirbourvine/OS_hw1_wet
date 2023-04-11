@@ -405,6 +405,45 @@ void QuitCommand::execute() {
     exit(1);
 }
 
+KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line){
+    this->list = jobs;
+    char* args[20];
+    char* cmd = strdup(cmd_line);
+    _removeBackgroundSign(cmd);//lose &
+    int num = _parseCommandLine(cmd, args);
+    if(num == 3){
+        this->job_id = stoi(args[2]);
+        std::string str = args[1];
+        if(str[0] != '-'){
+            cerr << "smash error: kill: invalid arguments" << endl;
+            return;
+        }
+        else{
+            std::string temp = str.substr(1, int(str.size())-1);
+            this->sig_num = stoi(temp);
+        }
+    }
+    else{
+        cerr << "smash error: kill: invalid arguments" << endl;
+    }
+}
+
+void KillCommand::execute() {
+    JobEntry* job = this->list->getJobById(this->job_id);
+    int err = kill(job->pid, this->sig_num);
+    if(err == -1){
+        perror("smash error: kill failed");
+        return;
+    }
+
+    std::string str = "";
+    str += "signal number ";
+    str += std::to_string(this->sig_num);
+    str += " was sent to pid ";
+    str += std::to_string(job->pid);
+    cout << str << endl;
+}
+
 ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash) : Command(cmd_line){
     this->isback = _isBackgroundComamnd(cmd_line);
     this->smash = smash;
@@ -562,6 +601,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   }
     if (firstWord.compare("quit") == 0) {
         return new QuitCommand(cmd_line, this->jobs_list);
+    }
+    if (firstWord.compare("kill") == 0) {
+        return new KillCommand(cmd_line, this->jobs_list);
     }
 
     //external commands
