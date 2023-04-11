@@ -83,7 +83,7 @@ class JobsList {
    time_t in_time;
    bool stopped;
 
-   std::string toString(){
+   std::string toString(bool wo_time = false){
        std::string str = "";
        str += "[";
        str += std::to_string(this->job_id);
@@ -91,6 +91,8 @@ class JobsList {
        str += this->cmd_line;
        str += " : ";
        str += std::to_string(this->pid);
+       if(wo_time)
+           return str;
        str += " ";
        time_t temp = time(nullptr);
        if(temp == ((time_t) -1)){
@@ -120,14 +122,6 @@ class JobsList {
   JobEntry * getLastJob(int* lastJobId);
   JobEntry *getLastStoppedJob(int *jobId);
   // TODO: Add extra methods or modify exisitng ones as needed
-};
-
-class ForegroundCommand : public BuiltInCommand {
- // TODO: Add your data members
- public:
-  ForegroundCommand(const char* cmd_line, JobsList* jobs);
-  virtual ~ForegroundCommand() {}
-  void execute() override;
 };
 
 class BackgroundCommand : public BuiltInCommand {
@@ -245,6 +239,15 @@ class ExternalCommand : public Command {
 public:
     ExternalCommand(const char* cmd_line, SmallShell* smash);
     virtual ~ExternalCommand() {}
+    void execute() override;
+};
+
+class ForegroundCommand : public BuiltInCommand {
+    // TODO: Add your data members
+    JobsList* list;
+public:
+    ForegroundCommand(const char* cmd_line, JobsList* jobs);
+    virtual ~ForegroundCommand() {}
     void execute() override;
 };
 
