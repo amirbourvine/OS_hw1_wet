@@ -248,6 +248,18 @@ JobEntry *JobsList::getJobById(int jobId) {
     return nullptr;
 }
 
+JobEntry *JobsList::getLastStoppedJob() {
+    int max_id = 0;
+    for(int i = 0; i<int(this->list.size()); i++){
+        if((max_id < this->list[i]->job_id) and (this->list[i]->stopped))
+            max_id = this->list[i]->job_id;
+    }
+    if(max_id == 0)
+        return nullptr;
+    else
+        return this->getJobById(max_id);
+}
+
 JobsCommand::JobsCommand(const char *cmd_line, JobsList* jobs) : BuiltInCommand(cmd_line){
     this->jobs = jobs;
 }
@@ -288,6 +300,57 @@ ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : Bui
     cerr << "smash error: fg: invalid arguments" << endl;
 }
 
+BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line){
+    this->list = jobs;
+    char* args[20];
+    char* cmd = strdup(cmd_line);
+    _removeBackgroundSign(cmd);//lose &
+    int num = _parseCommandLine(cmd, args);
+    if(num == 1){
+        JobEntry* job = jobs->getLastStoppedJob();
+        if(job == nullptr){
+            cerr << "smash error: bg: there is no stopped jobs to resume" << endl;
+        }
+        else{
+            this->job_id = job->job_id;
+        }
+        return;
+    }
+    if(num == 2){
+        int jobid = stoi(args[1]);
+        if(!(jobs->exsits(jobid))){
+            std::string str = "smash error: bg: job-id ";
+            str += args[1];
+            str += " does not exist";
+            cerr << str << endl;
+        }
+        else {
+            JobEntry *job = jobs->getJobById(jobid);
+            if (job->stopped) {
+                this->job_id = jobid;
+            } else {
+                std::string str = "smash error: bg: job-id ";
+                str += args[1];
+                str += " is already running in the background";
+                cerr << str << endl;
+            }
+        }
+        return;
+    }
+    cerr << "smash error: bg: invalid arguments" << endl;
+}
+
+void BackgroundCommand::execute() {
+    JobEntry* job = this->list->getJobById(this->job_id);
+    cout << job->toString(true) << endl;
+    int err = kill(job->pid, SIGCONT);
+    if(err == -1){
+        perror("smash error: kill failed");
+        return;
+    }
+    job->stopped = false;
+}
+
 void ForegroundCommand::execute() {
     JobEntry* job = this->list->getJobById(this->job_id);
     cout << job->toString(true) << endl;
@@ -299,6 +362,8 @@ void ForegroundCommand::execute() {
     this->list->removeJobById(this->job_id);
     waitpid(job->pid, NULL, 0);
 }
+
+
 
 ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash) : Command(cmd_line){
     this->isback = _isBackgroundComamnd(cmd_line);
@@ -449,9 +514,12 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   if (firstWord.compare("jobs") == 0) {
       return new JobsCommand(cmd_line, this->jobs_list);
   }
-    if (firstWord.compare("fg") == 0) {
-        return new ForegroundCommand(cmd_line, this->jobs_list);
-    }
+  if (firstWord.compare("fg") == 0) {
+      return new ForegroundCommand(cmd_line, this->jobs_list);
+  }
+  if (firstWord.compare("bg") == 0) {
+      return new BackgroundCommand(cmd_line, this->jobs_list);
+  }
 
     //external commands
     return new ExternalCommand(cmd_line, this);

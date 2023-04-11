@@ -123,19 +123,10 @@ class JobsList {
   void removeFinishedJobs();
   JobEntry * getJobById(int jobId);
   void removeJobById(int jobId);
-  JobEntry * getLastJob(int* lastJobId);
-  JobEntry *getLastStoppedJob(int *jobId);
+  JobEntry *getLastStoppedJob();
   bool exsits(int jobid);
   int maxJobId();
   // TODO: Add extra methods or modify exisitng ones as needed
-};
-
-class BackgroundCommand : public BuiltInCommand {
- // TODO: Add your data members
- public:
-  BackgroundCommand(const char* cmd_line, JobsList* jobs);
-  virtual ~BackgroundCommand() {}
-  void execute() override;
 };
 
 class TimeoutCommand : public BuiltInCommand {
@@ -255,6 +246,17 @@ class ForegroundCommand : public BuiltInCommand {
 public:
     ForegroundCommand(const char* cmd_line, JobsList* jobs);
     virtual ~ForegroundCommand() {}
+    void execute() override;
+};
+
+
+class BackgroundCommand : public BuiltInCommand {
+    // TODO: Add your data members
+    JobsList* list;
+    int job_id;
+public:
+    BackgroundCommand(const char* cmd_line, JobsList* jobs);
+    virtual ~BackgroundCommand() {}
     void execute() override;
 };
 
