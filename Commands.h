@@ -177,6 +177,7 @@ class KillCommand : public BuiltInCommand {
  JobsList* list;
  int job_id;
  int sig_num;
+ bool exe;
  public:
   KillCommand(const char* cmd_line, JobsList* jobs);
   virtual ~KillCommand() {}
@@ -256,6 +257,7 @@ class ForegroundCommand : public BuiltInCommand {
     // TODO: Add your data members
     JobsList* list;
     int job_id;
+    bool exe;
 public:
     ForegroundCommand(const char* cmd_line, JobsList* jobs);
     virtual ~ForegroundCommand() {}
@@ -267,6 +269,7 @@ class BackgroundCommand : public BuiltInCommand {
     // TODO: Add your data members
     JobsList* list;
     int job_id;
+    bool exe;
 public:
     BackgroundCommand(const char* cmd_line, JobsList* jobs);
     virtual ~BackgroundCommand() {}

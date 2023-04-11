@@ -287,6 +287,7 @@ void JobsCommand::execute() {
 
 ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line){
     this->list = jobs;
+    this->exe = true;
     char* args[20];
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
@@ -294,6 +295,7 @@ ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : Bui
     if(num == 1){
         if(jobs->maxJobId() == 0){
             cerr << "smash error: fg: jobs list is empty" << endl;
+            this->exe = false;
         }
         else{
             this->job_id = jobs->maxJobId();
@@ -310,13 +312,18 @@ ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : Bui
             str += args[1];
             str += " does not exist";
             cerr << str << endl;
+            this->exe = false;
         }
         return;
     }
     cerr << "smash error: fg: invalid arguments" << endl;
+    this->exe = false;
 }
 
 void ForegroundCommand::execute() {
+    if(this->exe == false){
+        return;
+    }
     JobEntry* job = this->list->getJobById(this->job_id);
     cout << job->toString(true) << endl;
     int err = kill(job->pid, SIGCONT);
@@ -330,6 +337,7 @@ void ForegroundCommand::execute() {
 
 BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line){
     this->list = jobs;
+    this->exe = true;
     char* args[20];
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
@@ -338,6 +346,7 @@ BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : Bui
         JobEntry* job = jobs->getLastStoppedJob();
         if(job == nullptr){
             cerr << "smash error: bg: there is no stopped jobs to resume" << endl;
+            this->exe = false;
         }
         else{
             this->job_id = job->job_id;
@@ -351,6 +360,7 @@ BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : Bui
             str += args[1];
             str += " does not exist";
             cerr << str << endl;
+            this->exe = false;
         }
         else {
             JobEntry *job = jobs->getJobById(jobid);
@@ -361,14 +371,19 @@ BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : Bui
                 str += args[1];
                 str += " is already running in the background";
                 cerr << str << endl;
+                this->exe = false;
             }
         }
         return;
     }
     cerr << "smash error: bg: invalid arguments" << endl;
+    this->exe = false;
 }
 
 void BackgroundCommand::execute() {
+    if(this->exe == false){
+        return;
+    }
     JobEntry* job = this->list->getJobById(this->job_id);
     cout << job->toString(true) << endl;
     int err = kill(job->pid, SIGCONT);
@@ -407,6 +422,7 @@ void QuitCommand::execute() {
 
 KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line){
     this->list = jobs;
+    this->exe = true;
     char* args[20];
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
@@ -414,12 +430,14 @@ KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(
     if(num == 3){
         this->job_id = stoi(args[2]);
         if(!jobs->exsits(this->job_id)){
-            cerr << "smash error: kill: job-id" << std::to_string(this->job_id) <<" does not exist" << endl;
+            cerr << "smash error: kill: job-id " << std::to_string(this->job_id) <<" does not exist" << endl;
+            this->exe = false;
             return;
         }
         std::string str = args[1];
         if(str[0] != '-'){
             cerr << "smash error: kill: invalid arguments" << endl;
+            this->exe = false;
             return;
         }
         else{
@@ -429,10 +447,14 @@ KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(
     }
     else{
         cerr << "smash error: kill: invalid arguments" << endl;
+        this->exe = false;
     }
 }
 
 void KillCommand::execute() {
+    if(this->exe == false){
+        return;
+    }
     JobEntry* job = this->list->getJobById(this->job_id);
     int err = kill(job->pid, this->sig_num);
     if(err == -1){
