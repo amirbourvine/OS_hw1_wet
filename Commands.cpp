@@ -263,7 +263,7 @@ JobEntry *JobsList::getLastStoppedJob() {
 void JobsList::killAllJobs() {
     std::string str = "smash: sending SIGKILL signal to ";
     str += std::to_string(int(this->list.size()));
-    str +=  "jobs:";
+    str +=  " jobs:";
     cout << str << endl;
 
     for(int i = 0; i<int(this->list.size()); i++){
