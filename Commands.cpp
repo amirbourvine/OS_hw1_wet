@@ -290,7 +290,7 @@ ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : Bui
 
 void ForegroundCommand::execute() {
     JobEntry* job = this->list->getJobById(this->job_id);
-    cout << job->toString(true);
+    cout << job->toString(true) << endl;
     int err = kill(job->pid, SIGCONT);
     if(err == -1){
         perror("smash error: kill failed");
