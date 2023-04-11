@@ -190,11 +190,46 @@ void JobsList::printJobsList() {
     }
 }
 
+void JobsList::removeJobById(int jobId) {
+    for(int j = 0; j<int(this->list.size()); j++){
+        if(jobId == this->list[j]->job_id){
+            this->list.erase(this->list.cbegin()+j);
+        }
+    }
+
+    //update max job id
+    this->max_job_id = 0;
+    for (int i = 0; i < int(this->list.size()); i++) {
+        if(this->list[i]->job_id>this->max_job_id){
+            this->max_job_id = this->list[i]->job_id;
+        }
+    }
+}
+
+void JobsList::removeFinishedJobs() {
+    std::vector<int> jobsid_to_delete;
+    for(int i = 0; i<int(this->list.size()); i++){
+        pid_t pid = waitpid(this->list[i]->pid, NULL, WNOHANG);
+        if(pid == -1)//error
+            perror("smash error: execvp failed");
+        if(pid > 0){//finished
+            jobsid_to_delete.push_back(this->list[i]->job_id);
+        }
+    }
+
+    for(int i = 0; i<int(jobsid_to_delete.size()); i++){
+        this->removeJobById(jobsid_to_delete[i]);
+    }
+
+    //max job id is updated in removeJobById()
+}
+
 JobsCommand::JobsCommand(const char *cmd_line, JobsList* jobs) : BuiltInCommand(cmd_line){
     this->jobs = jobs;
 }
 
 void JobsCommand::execute() {
+    this->jobs->removeFinishedJobs();
     this->jobs->printJobsList();
 }
 
@@ -226,6 +261,7 @@ void ExternalCommand::execute() {
         if(this->isback){//back
             pid_t pid = fork();
             if(pid==0){//son
+                setpgrp();
                 num = execlp("/bin/bash", "/bin/bash", "-c", this->getCmdLine().c_str(), nullptr);
                 if(num==-1)
                     perror("smash error: execvp failed");
@@ -239,6 +275,7 @@ void ExternalCommand::execute() {
         else{//front
             pid_t pid = fork();
             if(pid==0){//son
+                setpgrp();
                 num = execlp("/bin/bash", "/bin/bash", "-c", this->getCmdLine().c_str(), nullptr);
                 if(num==-1)
                     perror("smash error: execvp failed");
@@ -254,6 +291,7 @@ void ExternalCommand::execute() {
         if(this->isback){//back
             pid_t pid = fork();
             if(pid==0){//son
+                setpgrp();
                 num = execvp(this->command, this->args);
                 if(num==-1)
                     perror("smash error: execvp failed");
@@ -267,6 +305,7 @@ void ExternalCommand::execute() {
         else{//front
             pid_t pid = fork();
             if(pid==0){//son
+                setpgrp();
                 num = execvp(this->command, this->args);
                 if(num==-1)
                     perror("smash error: execvp failed");
@@ -281,6 +320,7 @@ void ExternalCommand::execute() {
 }
 
 void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
+    this->killFinishedJobs();
     this->jobs_list->addJob(cmd, pid, isStopped);
 }
 void SmallShell::setMsg(const std::string msg) {
@@ -293,6 +333,10 @@ const std::string SmallShell::getMsg() {
 
 const std::string SmallShell::getLastDir() {
     return this->last_dir;
+}
+
+void SmallShell::killFinishedJobs() {
+    this->jobs_list->removeFinishedJobs();
 }
 
 void SmallShell::setLastDir(const std::string last_dir) {

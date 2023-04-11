@@ -204,6 +204,7 @@ class SmallShell {
   void setLastDir(std::string last_dir);
   const std::string getLastDir();
   void add_job(Command* cmd, pid_t pid, bool isStopped = false);
+  void killFinishedJobs();
 };
 
 class chpromptCommand : public BuiltInCommand {
