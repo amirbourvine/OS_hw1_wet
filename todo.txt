@@ -1,2 +1,3 @@
-external: clean jobs list when needed
-then continue built-in from 6
+continue built-in from 6
+special
+signals
