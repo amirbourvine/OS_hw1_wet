@@ -707,9 +707,6 @@ int SmallShell::handle1_2(const char *cmd_line, int* std_out, int cmd_num) {
         err = open(temp, O_WRONLY | O_CREAT | O_APPEND, S_IRWXO | S_IRWXG | S_IRWXU);
     }
 
-    //debug
-    cout << "FD: " << to_string(err) << endl;
-
     if(err == -1) {
         perror("smash error: open failed");
         return -1;
@@ -819,7 +816,7 @@ char *SmallShell::handle_Pipe_IO_Command_Before(const char *cmd_line, int* std_o
 }
 
 int SmallShell::handle_Pipe_IO_Command_After(const char *cmd_line, int *std_out) {
-    if(is_IO_Pipe(cmd_line)==1){
+    if(is_IO_Pipe(cmd_line)==1 or is_IO_Pipe(cmd_line)==2){
         //retrieve std_out
         int err = close(1);
         if(err == -1) {
