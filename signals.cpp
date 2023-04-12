@@ -14,7 +14,7 @@ void ctrlZHandler(int sig_num) {
     }
     else{
         smash.add_job(smash.get_foreground_job_cmd(), smash.get_foreground_job_pid(), true);
-        int err = kill(smash.get_foreground_job_pid(),SIGTSTP);
+        int err = kill(smash.get_foreground_job_pid(),SIGSTOP);
         if(err == -1){
             perror("smash error: kill failed");
             return;
