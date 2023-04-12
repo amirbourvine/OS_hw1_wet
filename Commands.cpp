@@ -533,6 +533,16 @@ void KillCommand::execute() {
     cout << str << endl;
 }
 
+bool isComplex(const char* cmd_line){
+    std::string temp = cmd_line;
+    for(int i = 0; i<(int)temp.size(); i++){
+        if(temp[i] == '?' or temp[i] == '*'){
+            return true;
+        }
+    }
+    return false;
+}
+
 ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash) : Command(cmd_line){
     this->isback = _isBackgroundComamnd(cmd_line);
     this->smash = smash;
@@ -545,14 +555,7 @@ ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash) : Comm
     this->args = new char*[20];
     _parseCommandLine(cmd, this->args);//without the &
 
-    this->iscomplex =false;
-    std::string temp = cmd_line;
-    for(int i = 0; i<(int)temp.size(); i++){
-        if(temp[i] == '?' or temp[i] == '*'){
-            this->iscomplex = true;
-            return;
-        }
-    }
+    this->iscomplex = isComplex(cmd_line);
 }
 
 void ExternalCommand::execute() {
@@ -667,7 +670,7 @@ void SmallShell::setLastDir(const std::string last_dir) {
     this->last_dir = last_dir;
 }
 
-void SmallShell::handle1_simple(const char *cmd_line) {
+void SmallShell::handle1(const char *cmd_line) {
     char* args[20];
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);
@@ -749,43 +752,75 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   return new ExternalCommand(cmd_line, this);
 }
 
+char *SmallShell::handle_Pipe_IO_Command_Before(const char *cmd_line, int* std_out) {
+    char* final_cmd = strdup(cmd_line);
+
+    if(is_IO_Pipe(final_cmd) > 0){
+        _removeBackgroundSign(final_cmd);
+    }
+
+    if(is_IO_Pipe(final_cmd)==1){
+        //change cmd_line for external simple
+        if((!isComplex(final_cmd))){
+            std::string temp = final_cmd;
+            temp = temp.substr(0, temp.find_first_of('>'));
+            final_cmd = strdup(temp.c_str());
+        }
+
+        //keep std_out
+        *std_out =  dup(1);
+        if(*std_out == -1) {
+            perror("smash error: dup failed");
+            return nullptr;
+        }
+        this->handle1(final_cmd);
+    }
+    return final_cmd;
+}
+
+int SmallShell::handle_Pipe_IO_Command_After(const char *final_cmd, int *std_out) {
+    if(is_IO_Pipe(final_cmd)==1){
+        //retrieve std_out
+        int err = close(1);
+        if(err == -1) {
+            perror("smash error: close failed");
+            return -1;
+        }
+        err = dup2(*std_out, 1);
+        if(err == -1) {
+            perror("smash error: dup2 failed");
+            return -1;
+        }
+        err = close(*std_out);
+        if(err == -1) {
+            perror("smash error: close failed");
+            return -1;
+        }
+    }
+    return 1;
+}
+
 void SmallShell::executeCommand(const char *cmd_line) {
   // TODO: Add your implementation here
   // for example:
     int std_out = -1;
-    if(is_IO_Pipe(cmd_line)==1 && isSimple(cmd_line)){
-        //keep std_out
-        std_out =  dup(1);
-        if(std_out == -1) {
-            perror("smash error: dup failed");
-            return;
-        }
-        this->handle1_simple(cmd_line);
+
+    char* final_cmd = handle_Pipe_IO_Command_Before(cmd_line, &std_out);
+    if(final_cmd == nullptr){
+        return;
     }
 
-  Command* cmd = CreateCommand(cmd_line);
+
+  Command* cmd = CreateCommand(final_cmd);
   if(cmd != nullptr)
     cmd->execute();
 
 
-  if(is_IO_Pipe(cmd_line)==1 && isSimple(cmd_line)){
-      //retrieve std_out
-      int err = close(1);
-      if(err == -1) {
-          perror("smash error: close failed");
-          return;
-      }
-      err = dup2(std_out, 1);
-      if(err == -1) {
-          perror("smash error: dup2 failed");
-          return;
-      }
-      err = close(std_out);
-      if(err == -1) {
-          perror("smash error: close failed");
-          return;
-      }
+  int err = handle_Pipe_IO_Command_After(final_cmd, &std_out);
+  if(err == -1){
+      return;
   }
+
   // Please note that you must fork smash process for some commands (e.g., external commands....)
 }
 
