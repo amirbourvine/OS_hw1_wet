@@ -104,7 +104,7 @@ int is_IO_Pipe(const char *cmd_line){
     return 0;
 }
 
-bool isSimple(const char *cmd_line){
+bool is_Built_in(const char *cmd_line){
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
     string cmd_s = _trim(string(cmd));
@@ -761,7 +761,7 @@ char *SmallShell::handle_Pipe_IO_Command_Before(const char *cmd_line, int* std_o
 
     if(is_IO_Pipe(final_cmd)==1){
         //change cmd_line for external simple
-        if((!isComplex(final_cmd))){
+        if((!isComplex(final_cmd)) && (!is_Built_in(final_cmd))){
             std::string temp = final_cmd;
             temp = temp.substr(0, temp.find_first_of('>'));
             final_cmd = strdup(temp.c_str());
