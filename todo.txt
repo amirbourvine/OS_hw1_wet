@@ -1,11 +1,5 @@
 special:
-1) add that if there is & ignore it, in all IO/PIPE commands
-
-continue from > for external that are simple:
-
-2) change handle1 to be not only for simple
-3) if cmd is external simple then cut the cmd before the >
-
-then the rest of IO/PIPE command..
+1)the rest of IO/PIPE command..
+2)then the rest of the commands
 
 #note that SIG_ALRM is with the bonus command
