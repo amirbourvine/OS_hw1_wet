@@ -215,7 +215,7 @@ void JobsList::removeFinishedJobs() {
     for(int i = 0; i<int(this->list.size()); i++){
         pid_t pid = waitpid(this->list[i]->pid, NULL, WNOHANG);
         if(pid == -1)//error
-            perror("smash error: execvp failed");
+            perror("smash error: waitpid failed");
         if(pid > 0){//finished
             jobsid_to_delete.push_back(this->list[i]->job_id);
         }
@@ -501,7 +501,7 @@ void ExternalCommand::execute() {
                 setpgrp();
                 num = execlp("/bin/bash", "/bin/bash", "-c", this->getCmdLine().c_str(), nullptr);
                 if(num==-1)
-                    perror("smash error: execvp failed");
+                    perror("smash error: execlp failed");
                 return;
             }
             else{//father
@@ -515,7 +515,7 @@ void ExternalCommand::execute() {
                 setpgrp();
                 num = execlp("/bin/bash", "/bin/bash", "-c", this->getCmdLine().c_str(), nullptr);
                 if(num==-1)
-                    perror("smash error: execvp failed");
+                    perror("smash error: execlp failed");
                 return;
             }
             else{//father
