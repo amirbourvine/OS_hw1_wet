@@ -684,7 +684,8 @@ void SmallShell::handle1_simple(const char *cmd_line) {
         perror("smash error: close failed");
         return;
     }
-    err = open(args[index], O_WRONLY | O_CREAT, S_IRWXO | S_IRWXG  | S_IRWXU);
+    const char* temp = args[index];
+    err = open(temp, O_WRONLY | O_CREAT, S_IRWXO | S_IRWXG  | S_IRWXU);
     if(err == -1)
         perror("smash error: open failed");
 }
