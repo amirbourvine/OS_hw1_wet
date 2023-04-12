@@ -519,7 +519,11 @@ void ExternalCommand::execute() {
                 return;
             }
             else{//father
+                this->smash->set_foreground_job_pid(pid);
+                this->smash->set_foreground_job_cmd(this);
                 waitpid(pid, NULL, 0);
+                this->smash->set_foreground_job_pid(-1);
+                this->smash->set_foreground_job_cmd(nullptr);
                 return;
             }
         }
@@ -549,7 +553,11 @@ void ExternalCommand::execute() {
                 return;
             }
             else{//father
+                this->smash->set_foreground_job_pid(pid);
+                this->smash->set_foreground_job_cmd(this);
                 waitpid(pid, NULL, 0);
+                this->smash->set_foreground_job_pid(-1);
+                this->smash->set_foreground_job_cmd(nullptr);
                 return;
             }
         }
@@ -572,6 +580,22 @@ const std::string SmallShell::getLastDir() {
     return this->last_dir;
 }
 
+void SmallShell::set_foreground_job_pid(pid_t pid) {
+    this->foreground_job_pid = pid;
+}
+
+pid_t SmallShell::get_foreground_job_pid() {
+    return this->foreground_job_pid;
+}
+
+void SmallShell::set_foreground_job_cmd(Command *cmd) {
+    this->foreground_job_cmd = cmd;
+}
+
+Command *SmallShell::get_foreground_job_cmd() {
+    return this->foreground_job_cmd;
+}
+
 void SmallShell::killFinishedJobs() {
     this->jobs_list->removeFinishedJobs();
 }
@@ -585,6 +609,8 @@ SmallShell::SmallShell() {
     this->msg = "smash";
     this->last_dir = "";
     this->jobs_list = new JobsList();
+    this->foreground_job_pid = -1;
+    this->foreground_job_cmd = nullptr;
 }
 
 SmallShell::~SmallShell() {

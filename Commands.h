@@ -190,6 +190,8 @@ class SmallShell {
   std::string msg;
   std::string last_dir;
   JobsList* jobs_list;
+  pid_t foreground_job_pid;
+  Command* foreground_job_cmd;
   SmallShell();
  public:
   Command *CreateCommand(const char* cmd_line);
@@ -210,6 +212,10 @@ class SmallShell {
   const std::string getLastDir();
   void add_job(Command* cmd, pid_t pid, bool isStopped = false);
   void killFinishedJobs();
+  void set_foreground_job_pid(pid_t pid);
+  pid_t get_foreground_job_pid();
+  void set_foreground_job_cmd(Command* cmd);
+  Command* get_foreground_job_cmd();
 };
 
 class chpromptCommand : public BuiltInCommand {
