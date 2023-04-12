@@ -1,4 +1,3 @@
-check signals
 check built-in func bg (needs signals- cntrl-Z)
 special
 #note that SIG_ALRM is with the bonus command
