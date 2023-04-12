@@ -685,7 +685,12 @@ int SmallShell::handle1_2(const char *cmd_line, int* std_out, int cmd_num) {
     int index = -1;
     for(int i = 0; i<num; i++){
         str = args[i];
-        if(str.compare(">")==0){
+
+        if(cmd_num == 1 && str.compare(">")==0){
+            index = i + 1;
+        }
+
+        if(cmd_num == 2 && str.compare(">>")==0){
             index = i + 1;
         }
     }
