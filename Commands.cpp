@@ -103,6 +103,44 @@ int is_IO_Pipe(const char *cmd_line){
     return 0;
 }
 
+bool isSimple(const char *cmd_line){
+    char* cmd = strdup(cmd_line);
+    _removeBackgroundSign(cmd);//lose &
+    string cmd_s = _trim(string(cmd));
+    string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
+
+    //built-in commands
+
+    if (firstWord.compare("chprompt") == 0) {
+        return true;
+    }
+    if (firstWord.compare("showpid") == 0) {
+        return true;
+    }
+    if (firstWord.compare("pwd") == 0) {
+        return true;
+    }
+    if (firstWord.compare("cd") == 0) {
+        return true;
+    }
+    if (firstWord.compare("jobs") == 0) {
+        return true;
+    }
+    if (firstWord.compare("fg") == 0) {
+        return true;
+    }
+    if (firstWord.compare("bg") == 0) {
+        return true;
+    }
+    if (firstWord.compare("quit") == 0) {
+        return true;
+    }
+    if (firstWord.compare("kill") == 0) {
+        return true;
+    }
+    return false;
+}
+
 // TODO: Add your implementation for classes in Commands.h
 chpromptCommand::chpromptCommand(const char *cmd_line, SmallShell* smash) : BuiltInCommand(cmd_line){
     this->smash = smash;
@@ -641,8 +679,14 @@ void SmallShell::handle1_simple(const char *cmd_line) {
             index = i + 1;
         }
     }
-    close(1);
-    open(args[index], O_WRONLY | O_CREAT, S_IRWXO | S_IRWXG  | S_IRWXU);
+    int err = close(1);
+    if(err == -1) {
+        perror("smash error: close failed");
+        return;
+    }
+    err = open(args[index], O_WRONLY | O_CREAT, S_IRWXO | S_IRWXG  | S_IRWXU);
+    if(err == -1)
+        perror("smash error: open failed");
 }
 
 SmallShell::SmallShell() {
@@ -670,13 +714,6 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
   //built-in commands
-  int std_out = -1;
-  if(is_IO_Pipe(cmd_line)==1){
-      //keep std_out
-      std_out =  dup(1);
-
-      this->handle1_simple(cmd_line);
-  }
 
   if (firstWord.compare("chprompt") == 0) {
     return new chpromptCommand(cmd_line, this);
@@ -706,13 +743,6 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
       return new KillCommand(cmd_line, this->jobs_list);
   }
 
-  if(is_IO_Pipe(cmd_line)==1){
-      //retrieve std_out
-      close(1);
-      dup2(std_out, 1);
-      close(std_out);
-  }
-
   //external commands
   return new ExternalCommand(cmd_line, this);
 }
@@ -720,8 +750,40 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
 void SmallShell::executeCommand(const char *cmd_line) {
   // TODO: Add your implementation here
   // for example:
+    int std_out = -1;
+    if(is_IO_Pipe(cmd_line)==1 && isSimple(cmd_line)){
+        //keep std_out
+        std_out =  dup(1);
+        if(std_out == -1) {
+            perror("smash error: dup failed");
+            return;
+        }
+        this->handle1_simple(cmd_line);
+    }
+
   Command* cmd = CreateCommand(cmd_line);
-  cmd->execute();
+  if(cmd != nullptr)
+    cmd->execute();
+
+
+  if(is_IO_Pipe(cmd_line)==1 && isSimple(cmd_line)){
+      //retrieve std_out
+      int err = close(1);
+      if(err == -1) {
+          perror("smash error: close failed");
+          return;
+      }
+      err = dup2(std_out, 1);
+      if(err == -1) {
+          perror("smash error: dup2 failed");
+          return;
+      }
+      err = close(std_out);
+      if(err == -1) {
+          perror("smash error: close failed");
+          return;
+      }
+  }
   // Please note that you must fork smash process for some commands (e.g., external commands....)
 }
 
