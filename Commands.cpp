@@ -840,16 +840,20 @@ void SmallShell::executeCommand(const char *cmd_line) {
         return;
     }
 
+    cout << "HERE1" << endl;
 
   Command* cmd = CreateCommand(final_cmd);
   if(cmd != nullptr)
     cmd->execute();
 
+  cout << "HERE2" << endl;
 
   int err = handle_Pipe_IO_Command_After(cmd_line, &std_out);
   if(err == -1){
       return;
   }
+
+    cout << "HERE3" << endl;
 
   // Please note that you must fork smash process for some commands (e.g., external commands....)
 }
