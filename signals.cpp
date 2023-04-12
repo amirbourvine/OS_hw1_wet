@@ -14,7 +14,11 @@ void ctrlZHandler(int sig_num) {
     }
     else{
         smash.add_job(smash.get_foreground_job_cmd(), smash.get_foreground_job_pid(), true);
-        kill(smash.get_foreground_job_pid(),SIGKILL);
+        int err = kill(smash.get_foreground_job_pid(),SIGSTP);
+        if(err == -1){
+            perror("smash error: kill failed");
+            return;
+        }
         cout << " smash: process " << std::to_string(smash.get_foreground_job_pid()) << " was stopped" << endl;
         smash.set_foreground_job_cmd(nullptr);
         smash.set_foreground_job_pid(-1);
@@ -30,7 +34,11 @@ void ctrlCHandler(int sig_num) {
       return;
   }
   else{
-      kill(smash.get_foreground_job_pid(),SIGKILL);
+      int err = kill(smash.get_foreground_job_pid(),SIGKILL);
+      if(err == -1){
+          perror("smash error: kill failed");
+          return;
+      }
       cout << " smash: process " << std::to_string(smash.get_foreground_job_pid()) << " was killed" << endl;
       smash.set_foreground_job_cmd(nullptr);
       smash.set_foreground_job_pid(-1);
