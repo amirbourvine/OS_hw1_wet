@@ -789,8 +789,8 @@ char *SmallShell::handle_Pipe_IO_Command_Before(const char *cmd_line, int* std_o
     return final_cmd;
 }
 
-int SmallShell::handle_Pipe_IO_Command_After(const char *final_cmd, int *std_out) {
-    if(is_IO_Pipe(final_cmd)==1){
+int SmallShell::handle_Pipe_IO_Command_After(const char *cmd_line, int *std_out) {
+    if(is_IO_Pipe(cmd_line)==1){
         //retrieve std_out
         int err = close(1);
         if(err == -1) {
@@ -827,7 +827,7 @@ void SmallShell::executeCommand(const char *cmd_line) {
     cmd->execute();
 
 
-  int err = handle_Pipe_IO_Command_After(final_cmd, &std_out);
+  int err = handle_Pipe_IO_Command_After(cmd_line, &std_out);
   if(err == -1){
       return;
   }
