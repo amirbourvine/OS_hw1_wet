@@ -216,6 +216,7 @@ class SmallShell {
   pid_t get_foreground_job_pid();
   void set_foreground_job_cmd(Command* cmd);
   Command* get_foreground_job_cmd();
+  void handle1_simple(const char* cmd_line);
 };
 
 class chpromptCommand : public BuiltInCommand {

@@ -79,6 +79,30 @@ void _removeBackgroundSign(char* cmd_line) {
   cmd_line[str.find_last_not_of(WHITESPACE, idx) + 1] = 0;
 }
 
+int is_IO_Pipe(const char *cmd_line){
+    //return 0 if not, 1 for >, 2 for >>, 3 for |, 4 for |&
+    char* args[20];
+    char* cmd = strdup(cmd_line);
+    int num = _parseCommandLine(cmd, args);
+    std::string str;
+    for(int i = 0; i<num; i++){
+        str = args[i];
+        if(str.compare(">")==0){
+            return 1;
+        }
+        if(str.compare(">>")==0){
+            return 2;
+        }
+        if(str.compare("|")==0){
+            return 3;
+        }
+        if(str.compare("|&")==0){
+            return 4;
+        }
+    }
+    return 0;
+}
+
 // TODO: Add your implementation for classes in Commands.h
 chpromptCommand::chpromptCommand(const char *cmd_line, SmallShell* smash) : BuiltInCommand(cmd_line){
     this->smash = smash;
@@ -604,6 +628,23 @@ void SmallShell::setLastDir(const std::string last_dir) {
     this->last_dir = last_dir;
 }
 
+void SmallShell::handle1_simple(const char *cmd_line) {
+    char* args[20];
+    char* cmd = strdup(cmd_line);
+    _removeBackgroundSign(cmd);
+    int num = _parseCommandLine(cmd, args);
+    std::string str;
+    int index = -1;
+    for(int i = 0; i<num; i++){
+        str = args[i];
+        if(str.compare(">")==0){
+            index = i + 1;
+        }
+    }
+    close(1);
+    open(args[index], O_WRONLY | O_CREAT, S_IRWXO | S_IRWXG  | S_IRWXU);
+}
+
 SmallShell::SmallShell() {
 // TODO: add your implementation
     this->msg = "smash";
@@ -628,7 +669,14 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   string cmd_s = _trim(string(cmd));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
 
-    //built-in commands
+  //built-in commands
+  int std_out = -1;
+  if(is_IO_Pipe(cmd_line)==1){
+      //keep std_out
+      std_out =  dup(1);
+
+      this->handle1_simple(cmd_line);
+  }
 
   if (firstWord.compare("chprompt") == 0) {
     return new chpromptCommand(cmd_line, this);
@@ -651,15 +699,22 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   if (firstWord.compare("bg") == 0) {
       return new BackgroundCommand(cmd_line, this->jobs_list);
   }
-    if (firstWord.compare("quit") == 0) {
-        return new QuitCommand(cmd_line, this->jobs_list);
-    }
-    if (firstWord.compare("kill") == 0) {
-        return new KillCommand(cmd_line, this->jobs_list);
-    }
+  if (firstWord.compare("quit") == 0) {
+      return new QuitCommand(cmd_line, this->jobs_list);
+  }
+  if (firstWord.compare("kill") == 0) {
+      return new KillCommand(cmd_line, this->jobs_list);
+  }
 
-    //external commands
-    return new ExternalCommand(cmd_line, this);
+  if(is_IO_Pipe(cmd_line)==1){
+      //retrieve std_out
+      close(1);
+      dup2(std_out, 1);
+      close(std_out);
+  }
+
+  //external commands
+  return new ExternalCommand(cmd_line, this);
 }
 
 void SmallShell::executeCommand(const char *cmd_line) {
