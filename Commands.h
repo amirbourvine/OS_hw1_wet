@@ -216,7 +216,7 @@ class SmallShell {
   pid_t get_foreground_job_pid();
   void set_foreground_job_cmd(Command* cmd);
   Command* get_foreground_job_cmd();
-  int handle1(const char* cmd_line, int* std_out);
+  int handle1_2(const char* cmd_line, int* std_out, int cmd_num);
   char* handle_Pipe_IO_Command_Before(const char* cmd_line, int* std_out);
   char* handle_Pipe_IO_External_Simple(char* final_cmd);
   int handle_Pipe_IO_Command_After(const char* final_cmd, int* std_out);

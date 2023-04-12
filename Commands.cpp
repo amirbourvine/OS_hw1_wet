@@ -670,7 +670,7 @@ void SmallShell::setLastDir(const std::string last_dir) {
     this->last_dir = last_dir;
 }
 
-int SmallShell::handle1(const char *cmd_line, int* std_out) {
+int SmallShell::handle1_2(const char *cmd_line, int* std_out, int cmd_num) {
     *std_out =  dup(1);
     if(*std_out == -1) {
         perror("smash error: dup failed");
@@ -695,13 +695,18 @@ int SmallShell::handle1(const char *cmd_line, int* std_out) {
         return -1;
     }
     const char* temp = args[index];
-    err = open(temp, O_WRONLY | O_CREAT, S_IRWXO | S_IRWXG  | S_IRWXU);
+    if(cmd_num == 1)
+        err = open(temp, O_WRONLY | O_CREAT, S_IRWXO | S_IRWXG  | S_IRWXU);
+    if(cmd_num == 2)
+        err = open(temp, O_WRONLY | O_CREAT | O_APPEND, S_IRWXO | S_IRWXG  | S_IRWXU);
+
     if(err == -1) {
         perror("smash error: open failed");
         return -1;
     }
     return 1;
 }
+
 
 SmallShell::SmallShell() {
 // TODO: add your implementation
@@ -778,14 +783,23 @@ char *SmallShell::handle_Pipe_IO_Command_Before(const char *cmd_line, int* std_o
     }
 
     if(is_IO_Pipe(final_cmd)==1){
-        int err = this->handle1(final_cmd, std_out);
+        int err = this->handle1_2(final_cmd, std_out, 1);
         if(err == -1){
             return nullptr;
         }
-        //change cmd_line for external simple
-        //has to come after handle1 cause handle1 needs the file to change stdout into
-        final_cmd = handle_Pipe_IO_External_Simple(final_cmd);
     }
+
+    if(is_IO_Pipe(final_cmd)==2){
+        int err = this->handle1_2(final_cmd, std_out, 2);
+        if(err == -1){
+            return nullptr;
+        }
+    }
+
+    //change cmd_line for external simple
+    //has to come after handle cause handle needs the file to change stdout into
+    final_cmd = handle_Pipe_IO_External_Simple(final_cmd);
+
     return final_cmd;
 }
 
