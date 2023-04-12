@@ -14,7 +14,7 @@ void ctrlZHandler(int sig_num) {
     }
     else{
         smash.add_job(smash.get_foreground_job_cmd(), smash.get_foreground_job_pid(), true);
-        kill(smash.get_foreground_job_pid(),SIGSTOP);
+        kill(smash.get_foreground_job_pid(),SIGTSTP);
         cout << " smash: process " << std::to_string(smash.get_foreground_job_pid()) << " was stopped" << endl;
         return;
     }
