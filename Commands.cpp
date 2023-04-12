@@ -521,7 +521,7 @@ void ExternalCommand::execute() {
             else{//father
                 this->smash->set_foreground_job_pid(pid);
                 this->smash->set_foreground_job_cmd(this);
-                waitpid(pid, NULL, 0);
+                waitpid(pid, NULL, WUNTRACED);
                 this->smash->set_foreground_job_pid(-1);
                 this->smash->set_foreground_job_cmd(nullptr);
                 return;
@@ -555,7 +555,7 @@ void ExternalCommand::execute() {
             else{//father
                 this->smash->set_foreground_job_pid(pid);
                 this->smash->set_foreground_job_cmd(this);
-                waitpid(pid, NULL, 0);
+                waitpid(pid, NULL, WUNTRACED);
                 this->smash->set_foreground_job_pid(-1);
                 this->smash->set_foreground_job_cmd(nullptr);
                 return;
