@@ -700,10 +700,15 @@ int SmallShell::handle1_2(const char *cmd_line, int* std_out, int cmd_num) {
         return -1;
     }
     const char* temp = args[index];
-    if(cmd_num == 1)
-        err = open(temp, O_WRONLY | O_CREAT, S_IRWXO | S_IRWXG  | S_IRWXU);
-    if(cmd_num == 2)
-        err = open(temp, O_WRONLY | O_CREAT | O_APPEND, S_IRWXO | S_IRWXG  | S_IRWXU);
+    if(cmd_num == 1) {
+        err = open(temp, O_WRONLY | O_CREAT, S_IRWXO | S_IRWXG | S_IRWXU);
+    }
+    if(cmd_num == 2) {
+        err = open(temp, O_WRONLY | O_CREAT | O_APPEND, S_IRWXO | S_IRWXG | S_IRWXU);
+    }
+
+    //debug
+    cout << "FD: " << to_string(err) << endl;
 
     if(err == -1) {
         perror("smash error: open failed");
@@ -771,10 +776,13 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   return new ExternalCommand(cmd_line, this);
 }
 
-char *SmallShell::handle_Pipe_IO_External_Simple(char *final_cmd) {
+char *SmallShell::handle_Pipe_IO_External_Simple(char *final_cmd, int cmd_num) {
     if((!isComplex(final_cmd)) && (!is_Built_in(final_cmd))){
         std::string temp = final_cmd;
-        temp = temp.substr(0, temp.find_first_of('>'));
+        if(cmd_num == 1)
+            temp = temp.substr(0, temp.find_first_of('>'));
+        if(cmd_num == 2)
+            temp = temp.substr(0, temp.find_first_of(">>"));
         final_cmd = strdup(temp.c_str());
     }
     return final_cmd;
@@ -792,6 +800,9 @@ char *SmallShell::handle_Pipe_IO_Command_Before(const char *cmd_line, int* std_o
         if(err == -1){
             return nullptr;
         }
+        //change cmd_line for external simple
+        //has to come after handle cause handle needs the file to change stdout into
+        final_cmd = handle_Pipe_IO_External_Simple(final_cmd, 1);
     }
 
     if(is_IO_Pipe(final_cmd)==2){
@@ -799,11 +810,10 @@ char *SmallShell::handle_Pipe_IO_Command_Before(const char *cmd_line, int* std_o
         if(err == -1){
             return nullptr;
         }
+        //change cmd_line for external simple
+        //has to come after handle cause handle needs the file to change stdout into
+        final_cmd = handle_Pipe_IO_External_Simple(final_cmd, 2);
     }
-
-    //change cmd_line for external simple
-    //has to come after handle cause handle needs the file to change stdout into
-    final_cmd = handle_Pipe_IO_External_Simple(final_cmd);
 
     return final_cmd;
 }
@@ -840,20 +850,16 @@ void SmallShell::executeCommand(const char *cmd_line) {
         return;
     }
 
-    cout << "HERE1" << endl;
 
   Command* cmd = CreateCommand(final_cmd);
   if(cmd != nullptr)
     cmd->execute();
 
-  cout << "HERE2" << endl;
 
   int err = handle_Pipe_IO_Command_After(cmd_line, &std_out);
   if(err == -1){
       return;
   }
-
-    cout << "HERE3" << endl;
 
   // Please note that you must fork smash process for some commands (e.g., external commands....)
 }
