@@ -753,7 +753,7 @@ void SmallShell::executeCommand(const char *cmd_line) {
   // TODO: Add your implementation here
   // for example:
     int std_out = -1;
-    if(is_IO_Pipe(cmd_line)==1 && isSimple(cmd_line)){
+    if(is_IO_Pipe(cmd_line)==1){
         //keep std_out
         std_out =  dup(1);
         if(std_out == -1) {
@@ -768,7 +768,7 @@ void SmallShell::executeCommand(const char *cmd_line) {
     cmd->execute();
 
 
-  if(is_IO_Pipe(cmd_line)==1 && isSimple(cmd_line)){
+  if(is_IO_Pipe(cmd_line)==1){
       //retrieve std_out
       int err = close(1);
       if(err == -1) {
