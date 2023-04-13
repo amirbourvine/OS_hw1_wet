@@ -966,9 +966,10 @@ void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd) {
     // for example:
     std::string final_cmd = cmd_line;
     if(is_pipe_second_cmd){
-        std::string temp = "";
-        std::cin >> temp;
-        final_cmd += temp;
+        char* temp;
+        read(0, temp, 200);
+        std::string  help = temp;
+        final_cmd += help;
 
         cout << "SECOND_FINAL: " << final_cmd << endl;
     }
