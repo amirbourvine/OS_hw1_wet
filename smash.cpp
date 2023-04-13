@@ -23,5 +23,8 @@ int main(int argc, char* argv[]) {
         smash.killFinishedJobs();
         smash.executeCommand(cmd_line.c_str());
     }
+
+    delete smash;
+
     return 0;
 }
