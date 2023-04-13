@@ -1,4 +1,8 @@
 special:
+
+#check pipe for built-in and built-in
+#continue for other cases
+
 1)the rest of IO/PIPE command..
 2)then the rest of the commands
 
