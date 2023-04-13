@@ -773,8 +773,8 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   return new ExternalCommand(cmd_line, this);
 }
 
-char *SmallShell::handle_Pipe_IO_External_Simple(char *final_cmd, int cmd_num) {
-    if((!isComplex(final_cmd)) && (!is_Built_in(final_cmd))){
+char *SmallShell::handle_Pipe_IO_Built_in_Simple(char *final_cmd, int cmd_num) {
+    if(!isComplex(final_cmd)){
         std::string temp = final_cmd;
         if(cmd_num == 1)
             temp = temp.substr(0, temp.find_first_of('>'));
@@ -799,7 +799,7 @@ char *SmallShell::handle_Pipe_IO_Command_Before(const char *cmd_line, int* std_o
         }
         //change cmd_line for external simple
         //has to come after handle cause handle needs the file to change stdout into
-        final_cmd = handle_Pipe_IO_External_Simple(final_cmd, 1);
+        final_cmd = handle_Pipe_IO_Built_in_Simple(final_cmd, 1);
     }
 
     if(is_IO_Pipe(final_cmd)==2){
@@ -809,7 +809,7 @@ char *SmallShell::handle_Pipe_IO_Command_Before(const char *cmd_line, int* std_o
         }
         //change cmd_line for external simple
         //has to come after handle cause handle needs the file to change stdout into
-        final_cmd = handle_Pipe_IO_External_Simple(final_cmd, 2);
+        final_cmd = handle_Pipe_IO_Built_in_Simple(final_cmd, 2);
     }
 
     return final_cmd;
