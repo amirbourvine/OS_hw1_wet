@@ -35,10 +35,20 @@ class BuiltInCommand : public Command {
 
 class PipeCommand : public Command {
   // TODO: Add your data members
+  int std_in;
+  int std_out;
+  int std_err;
+  const char* initial_cmd_line;
+  std::string first_cmd;
+    std::string second_cmd;
+  bool exe;
  public:
   PipeCommand(const char* cmd_line);
   virtual ~PipeCommand() {}
   void execute() override;
+  bool is3();
+  bool is4();
+  void cleanup();
 };
 
 class RedirectionCommand : public Command {

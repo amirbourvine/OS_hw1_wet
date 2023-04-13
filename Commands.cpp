@@ -108,6 +108,10 @@ bool is_IO(const char *cmd_line){
     return (is_IO_Pipe(cmd_line) == 1) or (is_IO_Pipe(cmd_line) == 2);
 }
 
+bool is_PIPE(const char *cmd_line){
+    return (is_IO_Pipe(cmd_line) == 3) or (is_IO_Pipe(cmd_line) == 4);
+}
+
 bool is_Built_in(const char *cmd_line){
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
@@ -756,12 +760,94 @@ int RedirectionCommand::handle_IO_Command_After(const char *cmd_line) {
 }
 
 void RedirectionCommand::execute() {
-    SmallShell& smash = SmallShell::getInstance();
-    smash.executeCommand(this->getCmdLine().c_str());
-
+    if(this->exe) {
+        SmallShell &smash = SmallShell::getInstance();
+        smash.executeCommand(this->getCmdLine().c_str());
+    }
     int err = handle_IO_Command_After(this->initial_cmd_line);
     if(err == -1){
         return;
+    }
+}
+
+bool PipeCommand::is3() {
+    return is_IO_Pipe(this->initial_cmd_line) == 3;
+}
+
+bool PipeCommand::is4() {
+    return is_IO_Pipe(this->initial_cmd_line) == 4;
+}
+
+PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line){
+    this->std_in = -1;
+    this->std_err = -1;
+    this->std_out = -1;
+    this->exe = true;
+    this->initial_cmd_line = cmd_line;
+
+    char* final_cmd = strdup(cmd_line);
+    _removeBackgroundSign(final_cmd);
+    std::string temp = final_cmd;
+    if(this->is3()) {
+        this->first_cmd = temp.substr(0, temp.find_first_of('|'));
+        this->second_cmd = temp.substr(temp.find_first_of('|')+1, temp.size()-temp.find_first_of('|')-1);
+    }
+    if(this->is4()){
+        this->first_cmd = temp.substr(0, temp.find_first_of("|&"));
+        this->second_cmd = temp.substr(temp.find_first_of("|&")+2, temp.size()-temp.find_first_of("|&")-2);
+    }
+}
+
+void PipeCommand::execute() {
+    if(!this->exe) {
+        return;
+    }
+
+    int fd[2];
+    pipe(fd);
+
+    if(is_Built_in((this->first_cmd).c_str()) && is_Built_in((this->second_cmd).c_str())){
+        if(this->is3()) {
+            this->std_in = dup(0);
+            this->std_out = dup(1);
+
+            dup2(fd[0], 0);
+            dup2(fd[1], 1);
+
+            close(fd[0]);
+            close(fd[1]);
+        }
+        if(this->is4()) {
+            this->std_err = dup(2);
+            this->std_out = dup(1);
+
+            dup2(fd[0], 0);
+            dup2(fd[1], 2);
+
+            close(fd[0]);
+            close(fd[1]);
+        }
+
+        SmallShell &smash = SmallShell::getInstance();
+        smash.executeCommand(this->first_cmd.c_str());
+        smash.executeCommand(this->second_cmd.c_str());
+    }
+
+    this->cleanup();
+}
+
+void PipeCommand::cleanup() {
+    if(this->std_in != -1) {
+        dup2(this->std_in, 0);
+        close(this->std_in);
+    }
+    if(this->std_out != -1) {
+        dup2(this->std_out, 1);
+        close(this->std_out);
+    }
+    if(this->std_err != -1) {
+        dup2(this->std_err, 2);
+        close(this->std_err);
     }
 }
 
@@ -833,6 +919,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   //special commands
   if(is_IO(cmd_line)){
       return new RedirectionCommand(cmd_line);
+  }
+
+  if(is_PIPE(cmd_line)){
+      return new PipeCommand(cmd_line);
   }
 
   //built-in commands
