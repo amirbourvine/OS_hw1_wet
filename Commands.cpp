@@ -240,6 +240,11 @@ JobsList::JobsList() {
     this->max_job_id = 0;
 }
 
+JobsList::~JobsList(){
+    for(auto j : list)
+        delete j;
+}
+
 void JobsList::addJob(Command *cmd, pid_t pid, bool isStopped) {
     JobEntry* je = new JobEntry();
     this->max_job_id = this->max_job_id+1;
@@ -953,7 +958,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
     string cmd_s = _trim(string(cmd));
-    string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
+    string firstWord = cmd_s.substr(0, cmd_s.find_first_of(WHITESPACE));
 
     //special commands
     if(is_IO(cmd_line)){
