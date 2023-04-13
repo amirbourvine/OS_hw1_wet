@@ -817,7 +817,7 @@ void PipeCommand::execute() {
             close(fd[0]);
             close(fd[1]);
             smash.executeCommand(this->first_cmd.c_str(), false);
-            return;
+            exit(0);
         }
         if ((pid2 = fork()) == 0) {
             // second child
@@ -825,7 +825,7 @@ void PipeCommand::execute() {
             close(fd[0]);
             close(fd[1]);
             smash.executeCommand(this->second_cmd.c_str(), true);
-            return;
+            exit(0);
         }
     }
 
@@ -836,7 +836,7 @@ void PipeCommand::execute() {
             close(fd[0]);
             close(fd[1]);
             smash.executeCommand(this->first_cmd.c_str(), false);
-            return;
+            exit(0);
         }
         if ((pid2 = fork()) == 0) {
             // second child
@@ -844,7 +844,7 @@ void PipeCommand::execute() {
             close(fd[0]);
             close(fd[1]);
             smash.executeCommand(this->second_cmd.c_str(), true);
-            return;
+            exit(0);
         }
     }
 
