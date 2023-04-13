@@ -853,12 +853,12 @@ void PipeCommand::execute() {
     pipe(fd);
 
     if(this->is3()) {
-        cout << "HERE" << endl;
         if (fork() == 0) {
             // first child
             dup2(fd[1], 1);
             close(fd[0]);
             close(fd[1]);
+            cout << "FIRST: " << this->first_cmd << endl;
             smash.executeCommand(this->first_cmd.c_str(), false);
             return;
         }
@@ -867,6 +867,7 @@ void PipeCommand::execute() {
             dup2(fd[0], 0);
             close(fd[0]);
             close(fd[1]);
+            cout << "SECOND: " << this->second_cmd << endl;
             smash.executeCommand(this->second_cmd.c_str(), true);
             return;
         }
@@ -1012,7 +1013,11 @@ void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd) {
         std::string temp = "";
         std::cin >> temp;
         final_cmd += temp;
+
+        cout << "SECOND_FINAL: " << final_cmd << endl;
     }
+
+
 
     Command* cmd = CreateCommand(final_cmd.c_str());
     cmd->execute();
