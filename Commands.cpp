@@ -151,8 +151,7 @@ bool is_Built_in(const char *cmd_line){
 }
 
 // TODO: Add your implementation for classes in Commands.h
-chpromptCommand::chpromptCommand(const char *cmd_line, SmallShell* smash) : BuiltInCommand(cmd_line){
-    this->smash = smash;
+chpromptCommand::chpromptCommand(const char *cmd_line) : BuiltInCommand(cmd_line){
     char* args[20];
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
@@ -166,7 +165,8 @@ chpromptCommand::chpromptCommand(const char *cmd_line, SmallShell* smash) : Buil
 }
 
 void chpromptCommand::execute() {
-    this->smash->setMsg(this->msg);
+    SmallShell& smash = SmallShell::getInstance();
+    smash.setMsg(this->msg);
 }
 
 ShowPidCommand::ShowPidCommand(const char *cmd_line) : BuiltInCommand(cmd_line){}
@@ -936,7 +936,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     //built-in commands
 
     if (firstWord.compare("chprompt") == 0) {
-        return new chpromptCommand(cmd_line, this);
+        return new chpromptCommand(cmd_line);
     }
     if (firstWord.compare("showpid") == 0) {
         return new ShowPidCommand(cmd_line);

@@ -236,9 +236,8 @@ public:
 
 class chpromptCommand : public BuiltInCommand {
     std::string msg;
-    SmallShell* smash;
 public:
-    chpromptCommand(const char* cmd_line, SmallShell* smash);
+    chpromptCommand(const char* cmd_line);
     ~chpromptCommand() = default;
     void execute() override;
 };
