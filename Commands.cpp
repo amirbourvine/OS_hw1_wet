@@ -861,7 +861,7 @@ void PipeCommand::execute() {
             dup2(fd[0], 0);
             close(fd[0]);
             close(fd[1]);
-            smash.executeCommand(this->second_cmd.c_str());
+            smash.executeCommand(this->second_cmd.c_str(), true);
             return;
         }
     }
@@ -880,7 +880,7 @@ void PipeCommand::execute() {
             dup2(fd[0], 0);
             close(fd[0]);
             close(fd[1]);
-            smash.executeCommand(this->second_cmd.c_str());
+            smash.executeCommand(this->second_cmd.c_str(), true);
             return;
         }
     }
@@ -998,10 +998,17 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     return new ExternalCommand(cmd_line, this);
 }
 
-void SmallShell::executeCommand(const char *cmd_line) {
+void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd) {
     // TODO: Add your implementation here
     // for example:
-    Command* cmd = CreateCommand(cmd_line);
+    std::string final_cmd = cmd_line;
+    if(is_pipe_second_cmd){
+        std::string temp = "";
+        std::cin >> temp;
+        final_cmd += temp;
+    }
+
+    Command* cmd = CreateCommand(final_cmd.c_str());
     cmd->execute();
 
     delete cmd;

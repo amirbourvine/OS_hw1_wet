@@ -219,7 +219,7 @@ public:
         return instance;
     }
     ~SmallShell();
-    void executeCommand(const char* cmd_line);
+    void executeCommand(const char* cmd_line, bool is_pipe_second_cmd = false);
     // TODO: add extra methods as needed
     void setMsg(std::string msg);
     const std::string getMsg();
