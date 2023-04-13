@@ -104,6 +104,10 @@ int is_IO_Pipe(const char *cmd_line){
     return 0;
 }
 
+bool is_IO(const char *cmd_line){
+    return (is_IO_Pipe(cmd_line) == 1) or (is_IO_Pipe(cmd_line) == 2);
+}
+
 bool is_Built_in(const char *cmd_line){
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
@@ -630,49 +634,21 @@ void ExternalCommand::execute() {
     }
 }
 
-void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
-    this->killFinishedJobs();
-    this->jobs_list->addJob(cmd, pid, isStopped);
-}
-void SmallShell::setMsg(const std::string msg) {
-    this->msg = msg;
+RedirectionCommand::RedirectionCommand(const char *cmd_line) : Command(cmd_line){
+    this->std_out = -1;
+    this->exe = true;
+    this->initial_cmd_line = cmd_line;
+
+   int err = this->handle_IO_Command_Before(cmd_line);
+    if(err == -1){
+        this->exe = false;
+    }
 }
 
-const std::string SmallShell::getMsg() {
-    return this->msg;
-}
 
-const std::string SmallShell::getLastDir() {
-    return this->last_dir;
-}
-
-void SmallShell::set_foreground_job_pid(pid_t pid) {
-    this->foreground_job_pid = pid;
-}
-
-pid_t SmallShell::get_foreground_job_pid() {
-    return this->foreground_job_pid;
-}
-
-void SmallShell::set_foreground_job_cmd(Command *cmd) {
-    this->foreground_job_cmd = cmd;
-}
-
-Command *SmallShell::get_foreground_job_cmd() {
-    return this->foreground_job_cmd;
-}
-
-void SmallShell::killFinishedJobs() {
-    this->jobs_list->removeFinishedJobs();
-}
-
-void SmallShell::setLastDir(const std::string last_dir) {
-    this->last_dir = last_dir;
-}
-
-int SmallShell::handle1_2(const char *cmd_line, int* std_out, int cmd_num) {
-    *std_out =  dup(1);
-    if(*std_out == -1) {
+int RedirectionCommand::handle1_2(const char *cmd_line, int cmd_num) {
+    this->std_out =  dup(1);
+    if(this->std_out == -1) {
         perror("smash error: dup failed");
         return -1;
     }
@@ -714,6 +690,121 @@ int SmallShell::handle1_2(const char *cmd_line, int* std_out, int cmd_num) {
     return 1;
 }
 
+char *RedirectionCommand::handle_IO_Built_in_Simple(char *final_cmd, int cmd_num) {
+    if(!isComplex(final_cmd)){
+        std::string temp = final_cmd;
+        if(cmd_num == 1)
+            temp = temp.substr(0, temp.find_first_of('>'));
+        if(cmd_num == 2)
+            temp = temp.substr(0, temp.find_first_of(">>"));
+        final_cmd = strdup(temp.c_str());
+    }
+    return final_cmd;
+}
+
+int RedirectionCommand::handle_IO_Command_Before(const char *cmd_line) {
+    char* final_cmd = strdup(cmd_line);
+
+    if(is_IO_Pipe(final_cmd) > 0){
+        _removeBackgroundSign(final_cmd);
+    }
+
+    if(is_IO_Pipe(final_cmd)==1){
+        int err = this->handle1_2(final_cmd, 1);
+        if(err == -1){
+            return -1;
+        }
+        //change cmd_line for external simple
+        //has to come after handle cause handle needs the file to change stdout into
+        final_cmd = this->handle_IO_Built_in_Simple(final_cmd, 1);
+    }
+
+    if(is_IO_Pipe(final_cmd)==2){
+        int err = this->handle1_2(final_cmd, 2);
+        if(err == -1){
+            return -1;
+        }
+        //change cmd_line for external simple
+        //has to come after handle cause handle needs the file to change stdout into
+        final_cmd = this->handle_IO_Built_in_Simple(final_cmd, 2);
+    }
+
+    this->setCmdLine(final_cmd);
+    return 1;
+}
+
+int RedirectionCommand::handle_IO_Command_After(const char *cmd_line) {
+    if(is_IO_Pipe(cmd_line)==1 or is_IO_Pipe(cmd_line)==2){
+        //retrieve std_out
+        int err = close(1);
+        if(err == -1) {
+            perror("smash error: close failed");
+            return -1;
+        }
+        err = dup2(this->std_out, 1);
+        if(err == -1) {
+            perror("smash error: dup2 failed");
+            return -1;
+        }
+        err = close(this->std_out);
+        if(err == -1) {
+            perror("smash error: close failed");
+            return -1;
+        }
+    }
+    return 1;
+}
+
+void RedirectionCommand::execute() {
+    SmallShell& smash = SmallShell::getInstance();
+    smash.executeCommand(this->getCmdLine().c_str());
+
+    int err = handle_IO_Command_After(this->initial_cmd_line);
+    if(err == -1){
+        return;
+    }
+}
+
+void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
+    this->killFinishedJobs();
+    this->jobs_list->addJob(cmd, pid, isStopped);
+}
+void SmallShell::setMsg(const std::string msg) {
+    this->msg = msg;
+}
+
+const std::string SmallShell::getMsg() {
+    return this->msg;
+}
+
+const std::string SmallShell::getLastDir() {
+    return this->last_dir;
+}
+
+void SmallShell::set_foreground_job_pid(pid_t pid) {
+    this->foreground_job_pid = pid;
+}
+
+pid_t SmallShell::get_foreground_job_pid() {
+    return this->foreground_job_pid;
+}
+
+void SmallShell::set_foreground_job_cmd(Command *cmd) {
+    this->foreground_job_cmd = cmd;
+}
+
+Command *SmallShell::get_foreground_job_cmd() {
+    return this->foreground_job_cmd;
+}
+
+void SmallShell::killFinishedJobs() {
+    this->jobs_list->removeFinishedJobs();
+}
+
+void SmallShell::setLastDir(const std::string last_dir) {
+    this->last_dir = last_dir;
+}
+
 
 SmallShell::SmallShell() {
 // TODO: add your implementation
@@ -738,6 +829,11 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     _removeBackgroundSign(cmd);//lose &
   string cmd_s = _trim(string(cmd));
   string firstWord = cmd_s.substr(0, cmd_s.find_first_of(" \n"));
+
+  //special commands
+  if(is_IO(cmd_line)){
+      return new RedirectionCommand(cmd_line);
+  }
 
   //built-in commands
 
@@ -773,90 +869,11 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
   return new ExternalCommand(cmd_line, this);
 }
 
-char *SmallShell::handle_Pipe_IO_Built_in_Simple(char *final_cmd, int cmd_num) {
-    if(!isComplex(final_cmd)){
-        std::string temp = final_cmd;
-        if(cmd_num == 1)
-            temp = temp.substr(0, temp.find_first_of('>'));
-        if(cmd_num == 2)
-            temp = temp.substr(0, temp.find_first_of(">>"));
-        final_cmd = strdup(temp.c_str());
-    }
-    return final_cmd;
-}
-
-char *SmallShell::handle_Pipe_IO_Command_Before(const char *cmd_line, int* std_out) {
-    char* final_cmd = strdup(cmd_line);
-
-    if(is_IO_Pipe(final_cmd) > 0){
-        _removeBackgroundSign(final_cmd);
-    }
-
-    if(is_IO_Pipe(final_cmd)==1){
-        int err = this->handle1_2(final_cmd, std_out, 1);
-        if(err == -1){
-            return nullptr;
-        }
-        //change cmd_line for external simple
-        //has to come after handle cause handle needs the file to change stdout into
-        final_cmd = handle_Pipe_IO_Built_in_Simple(final_cmd, 1);
-    }
-
-    if(is_IO_Pipe(final_cmd)==2){
-        int err = this->handle1_2(final_cmd, std_out, 2);
-        if(err == -1){
-            return nullptr;
-        }
-        //change cmd_line for external simple
-        //has to come after handle cause handle needs the file to change stdout into
-        final_cmd = handle_Pipe_IO_Built_in_Simple(final_cmd, 2);
-    }
-
-    return final_cmd;
-}
-
-int SmallShell::handle_Pipe_IO_Command_After(const char *cmd_line, int *std_out) {
-    if(is_IO_Pipe(cmd_line)==1 or is_IO_Pipe(cmd_line)==2){
-        //retrieve std_out
-        int err = close(1);
-        if(err == -1) {
-            perror("smash error: close failed");
-            return -1;
-        }
-        err = dup2(*std_out, 1);
-        if(err == -1) {
-            perror("smash error: dup2 failed");
-            return -1;
-        }
-        err = close(*std_out);
-        if(err == -1) {
-            perror("smash error: close failed");
-            return -1;
-        }
-    }
-    return 1;
-}
-
 void SmallShell::executeCommand(const char *cmd_line) {
   // TODO: Add your implementation here
   // for example:
-    int std_out = -1;
-
-    char* final_cmd = handle_Pipe_IO_Command_Before(cmd_line, &std_out);
-    if(final_cmd == nullptr){
-        return;
-    }
-
-
-  Command* cmd = CreateCommand(final_cmd);
-  if(cmd != nullptr)
-    cmd->execute();
-
-
-  int err = handle_Pipe_IO_Command_After(cmd_line, &std_out);
-  if(err == -1){
-      return;
-  }
+  Command* cmd = CreateCommand(cmd_line);
+  cmd->execute();
 
   // Please note that you must fork smash process for some commands (e.g., external commands....)
 }

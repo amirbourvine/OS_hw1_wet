@@ -18,6 +18,9 @@ class Command {
   std::string getCmdLine(){
       return this->cmd_line;
   }
+  std::string setCmdLine(std::string str){
+      this->cmd_line = str;
+  }
   virtual void execute() = 0;
   //virtual void prepare();
   //virtual void cleanup();
@@ -40,12 +43,17 @@ class PipeCommand : public Command {
 
 class RedirectionCommand : public Command {
  // TODO: Add your data members
+ int std_out;
+ const char* initial_cmd_line;
+ bool exe;
  public:
   explicit RedirectionCommand(const char* cmd_line);
   virtual ~RedirectionCommand() {}
   void execute() override;
-  //void prepare() override;
-  //void cleanup() override;
+  int handle1_2(const char* cmd_line, int cmd_num);
+  int handle_IO_Command_Before(const char* cmd_line);
+  char* handle_IO_Built_in_Simple(char* final_cmd, int cmd_num);
+  int handle_IO_Command_After(const char* final_cmd);
 };
 
 class GetCurrDirCommand : public BuiltInCommand {
@@ -216,10 +224,7 @@ class SmallShell {
   pid_t get_foreground_job_pid();
   void set_foreground_job_cmd(Command* cmd);
   Command* get_foreground_job_cmd();
-  int handle1_2(const char* cmd_line, int* std_out, int cmd_num);
-  char* handle_Pipe_IO_Command_Before(const char* cmd_line, int* std_out);
-  char* handle_Pipe_IO_Built_in_Simple(char* final_cmd, int cmd_num);
-  int handle_Pipe_IO_Command_After(const char* final_cmd, int* std_out);
+  int handle3_4(const char* cmd_line, int* std_in, int* std_out, int cmd_num);
 };
 
 class chpromptCommand : public BuiltInCommand {
