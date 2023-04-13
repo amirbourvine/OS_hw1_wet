@@ -798,14 +798,7 @@ PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line){
     }
 }
 
-void PipeCommand::execute() {
-    if(!this->exe) {
-        return;
-    }
-
-    int fd[2];
-    pipe(fd);
-
+void PipeCommand::handle_bi_bi(int *fd) {
     if(is_Built_in((this->first_cmd).c_str()) && is_Built_in((this->second_cmd).c_str())){
         if(this->is3()) {
             this->std_in = dup(0);
@@ -832,6 +825,17 @@ void PipeCommand::execute() {
         smash.executeCommand(this->first_cmd.c_str());
         smash.executeCommand(this->second_cmd.c_str());
     }
+}
+
+void PipeCommand::execute() {
+    if(!this->exe) {
+        return;
+    }
+
+    int fd[2];
+    pipe(fd);
+
+    handle_bi_bi(fd);
 
     this->cleanup();
 }

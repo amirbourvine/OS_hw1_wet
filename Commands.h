@@ -49,6 +49,7 @@ class PipeCommand : public Command {
   bool is3();
   bool is4();
   void cleanup();
+  void handle_bi_bi(int fd[2]);
 };
 
 class RedirectionCommand : public Command {
