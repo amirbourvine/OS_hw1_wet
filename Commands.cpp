@@ -801,8 +801,8 @@ void SmallShell::killFinishedJobs() {
     this->jobs_list->removeFinishedJobs();
 }
 
-void SmallShell::setLastDir(const std::string last_dir) {
-    this->last_dir = last_dir;
+void SmallShell::setLastDir(const std::string last_dirr) {
+    this->last_dir = last_dirr;
 }
 
 
