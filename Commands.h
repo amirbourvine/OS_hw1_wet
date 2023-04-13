@@ -141,7 +141,7 @@ public:
     int max_job_id;
 public:
     JobsList();
-    ~JobsList() = default;
+    ~JobsList();
     void addJob(Command* cmd, pid_t pid, bool isStopped = false);
     void printJobsList();
     void killAllJobs();
