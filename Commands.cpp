@@ -408,7 +408,7 @@ void ForegroundCommand::execute() {
         return;
     }
     this->list->removeJobById(this->job_id);
-    waitpid(job->pid, NULL, 0);
+    waitpid(job->pid, NULL, WUNTRACED);
 }
 
 BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line){
@@ -793,8 +793,6 @@ PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line){
     if(this->is3()) {
         this->first_cmd = temp.substr(0, temp.find_first_of('|'));
         this->second_cmd = temp.substr(temp.find_first_of('|')+1, temp.size()-temp.find_first_of('|')-1);
-        cout << "FIRST: " << this->first_cmd << endl;
-        cout << "SECOND: " << this->second_cmd << endl;
     }
     if(this->is4()){
         this->first_cmd = temp.substr(0, temp.find_first_of("|&"));
@@ -810,8 +808,10 @@ void PipeCommand::execute() {
     int fd[2];
     pipe(fd);
 
+    pid_t pid1, pid2;
+
     if(this->is3()) {
-        if (fork() == 0) {
+        if ((pid1 = fork()) == 0) {
             // first child
             dup2(fd[1], 1);
             close(fd[0]);
@@ -819,7 +819,7 @@ void PipeCommand::execute() {
             smash.executeCommand(this->first_cmd.c_str(), false);
             return;
         }
-        if (fork() == 0) {
+        if ((pid2 = fork()) == 0) {
             // second child
             dup2(fd[0], 0);
             close(fd[0]);
@@ -830,7 +830,7 @@ void PipeCommand::execute() {
     }
 
     if(this->is4()) {
-        if (fork() == 0) {
+        if ((pid1 = fork()) == 0) {
             // first child
             dup2(fd[1], 2);
             close(fd[0]);
@@ -838,7 +838,7 @@ void PipeCommand::execute() {
             smash.executeCommand(this->first_cmd.c_str(), false);
             return;
         }
-        if (fork() == 0) {
+        if ((pid2 = fork()) == 0) {
             // second child
             dup2(fd[0], 0);
             close(fd[0]);
@@ -850,6 +850,10 @@ void PipeCommand::execute() {
 
     close(fd[0]);
     close(fd[1]);
+
+    waitpid(pid1, NULL, WUNTRACED);
+    waitpid(pid2, NULL, WUNTRACED);
+
 }
 
 
@@ -971,10 +975,7 @@ void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd) {
         std::string  help = temp;
         final_cmd += " ";
         final_cmd += help;
-
-        cout << "SECOND_FINAL: " << final_cmd << endl;
     }
-
 
 
     Command* cmd = CreateCommand(final_cmd.c_str());
