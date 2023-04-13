@@ -779,9 +779,6 @@ bool PipeCommand::is4() {
 }
 
 PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line){
-    this->std_in = -1;
-    this->std_err = -1;
-    this->std_out = -1;
     this->exe = true;
     this->initial_cmd_line = cmd_line;
 
@@ -798,6 +795,7 @@ PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line){
     }
 }
 
+/*
 void PipeCommand::handle_bi_bi(int *fd) {
     if(is_Built_in((this->first_cmd).c_str()) && is_Built_in((this->second_cmd).c_str())){
         if(this->is3()) {
@@ -827,33 +825,70 @@ void PipeCommand::handle_bi_bi(int *fd) {
     }
 }
 
+
+void PipeCommand::handle_pipe(int *fd) {
+    SmallShell &smash = SmallShell::getInstance();
+    if(this->is3()) {
+        smash.executeCommand(this->first_cmd.c_str(), cmd_type = 3, cmd_num = 1, fd = fd);
+        smash.executeCommand(this->second_cmd.c_str(), cmd_type = 3, cmd_num = 2, fd = fd);
+    }
+    if(this->is4()) {
+        smash.executeCommand(this->first_cmd.c_str(), cmd_type = 4, cmd_num = 1, fd = fd);
+        smash.executeCommand(this->second_cmd.c_str(), cmd_type = 4, cmd_num = 2, fd = fd);
+    }
+}
+*/
+
 void PipeCommand::execute() {
     if(!this->exe) {
         return;
     }
-
+    SmallShell &smash = SmallShell::getInstance();
     int fd[2];
     pipe(fd);
 
-    handle_bi_bi(fd);
+    if(this->is3()) {
+        if (fork() == 0) {
+            // first child
+            dup2(fd[1], 1);
+            close(fd[0]);
+            close(fd[1]);
+            smash.executeCommand(this->first_cmd.c_str());
+            return;
+        }
+        if (fork() == 0) {
+            // second child
+            dup2(fd[0], 0);
+            close(fd[0]);
+            close(fd[1]);
+            smash.executeCommand(this->second_cmd.c_str());
+            return;
+        }
+    }
 
-    this->cleanup();
+    if(this->is4()) {
+        if (fork() == 0) {
+            // first child
+            dup2(fd[1], 2);
+            close(fd[0]);
+            close(fd[1]);
+            smash.executeCommand(this->first_cmd.c_str());
+            return;
+        }
+        if (fork() == 0) {
+            // second child
+            dup2(fd[0], 0);
+            close(fd[0]);
+            close(fd[1]);
+            smash.executeCommand(this->second_cmd.c_str());
+            return;
+        }
+    }
+
+    close(fd[0]);
+    close(fd[1]);
 }
 
-void PipeCommand::cleanup() {
-    if(this->std_in != -1) {
-        dup2(this->std_in, 0);
-        close(this->std_in);
-    }
-    if(this->std_out != -1) {
-        dup2(this->std_out, 1);
-        close(this->std_out);
-    }
-    if(this->std_err != -1) {
-        dup2(this->std_err, 2);
-        close(this->std_err);
-    }
-}
 
 void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
     this->killFinishedJobs();
