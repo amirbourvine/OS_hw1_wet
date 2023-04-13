@@ -18,7 +18,7 @@ class Command {
   std::string getCmdLine(){
       return this->cmd_line;
   }
-  std::string setCmdLine(std::string str){
+  void setCmdLine(std::string str){
       this->cmd_line = str;
   }
   virtual void execute() = 0;
