@@ -767,7 +767,7 @@ int RedirectionCommand::handle_IO_Command_After(const char *cmd_line) {
 void RedirectionCommand::execute() {
     if(this->exe) {
         SmallShell &smash = SmallShell::getInstance();
-        smash.executeCommand(this->getCmdLine().c_str());
+        smash.executeCommand(this->getCmdLine().c_str(), false);
     }
     int err = handle_IO_Command_After(this->initial_cmd_line);
     if(err == -1){
@@ -853,12 +853,13 @@ void PipeCommand::execute() {
     pipe(fd);
 
     if(this->is3()) {
+        cout << "HERE" << endl;
         if (fork() == 0) {
             // first child
             dup2(fd[1], 1);
             close(fd[0]);
             close(fd[1]);
-            smash.executeCommand(this->first_cmd.c_str());
+            smash.executeCommand(this->first_cmd.c_str(), false);
             return;
         }
         if (fork() == 0) {
@@ -877,7 +878,7 @@ void PipeCommand::execute() {
             dup2(fd[1], 2);
             close(fd[0]);
             close(fd[1]);
-            smash.executeCommand(this->first_cmd.c_str());
+            smash.executeCommand(this->first_cmd.c_str(), false);
             return;
         }
         if (fork() == 0) {
