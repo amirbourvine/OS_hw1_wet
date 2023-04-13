@@ -827,36 +827,6 @@ void PipeCommand::handle_bi_bi(int *fd) {
     }
 }
 
-void PipeCommand::handle_bi_bi(int *fd) {
-    if(is_Built_in((this->first_cmd).c_str()) && is_Built_in((this->second_cmd).c_str())){
-        if(this->is3()) {
-            this->std_in = dup(0);
-            this->std_out = dup(1);
-
-            dup2(fd[0], 0);
-            dup2(fd[1], 1);
-
-            close(fd[0]);
-            close(fd[1]);
-        }
-        if(this->is4()) {
-            this->std_err = dup(2);
-            this->std_out = dup(1);
-
-            dup2(fd[0], 0);
-            dup2(fd[1], 2);
-
-            close(fd[0]);
-            close(fd[1]);
-        }
-
-        SmallShell &smash = SmallShell::getInstance();
-        smash.executeCommand(this->first_cmd.c_str());
-        smash.executeCommand(this->second_cmd.c_str());
-    }
-}
-
-
 void PipeCommand::execute() {
     if(!this->exe) {
         return;
@@ -865,13 +835,7 @@ void PipeCommand::execute() {
     int fd[2];
     pipe(fd);
 
-    //handle_bi_bi(fd);
-
-    //handle_ext_bi(fd);
-
-    handle_bi_ext(fd);
-
-    handle_ext_ext(fd);
+    handle_bi_bi(fd);
 
     this->cleanup();
 }
