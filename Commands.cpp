@@ -793,56 +793,14 @@ PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line){
     if(this->is3()) {
         this->first_cmd = temp.substr(0, temp.find_first_of('|'));
         this->second_cmd = temp.substr(temp.find_first_of('|')+1, temp.size()-temp.find_first_of('|')-1);
+        cout << "FIRST: " << this->first_cmd << endl;
+        cout << "SECOND: " << this->second_cmd << endl;
     }
     if(this->is4()){
         this->first_cmd = temp.substr(0, temp.find_first_of("|&"));
         this->second_cmd = temp.substr(temp.find_first_of("|&")+2, temp.size()-temp.find_first_of("|&")-2);
     }
 }
-
-/*
-void PipeCommand::handle_bi_bi(int *fd) {
-    if(is_Built_in((this->first_cmd).c_str()) && is_Built_in((this->second_cmd).c_str())){
-        if(this->is3()) {
-            this->std_in = dup(0);
-            this->std_out = dup(1);
-
-            dup2(fd[0], 0);
-            dup2(fd[1], 1);
-
-            close(fd[0]);
-            close(fd[1]);
-        }
-        if(this->is4()) {
-            this->std_err = dup(2);
-            this->std_out = dup(1);
-
-            dup2(fd[0], 0);
-            dup2(fd[1], 2);
-
-            close(fd[0]);
-            close(fd[1]);
-        }
-
-        SmallShell &smash = SmallShell::getInstance();
-        smash.executeCommand(this->first_cmd.c_str());
-        smash.executeCommand(this->second_cmd.c_str());
-    }
-}
-
-
-void PipeCommand::handle_pipe(int *fd) {
-    SmallShell &smash = SmallShell::getInstance();
-    if(this->is3()) {
-        smash.executeCommand(this->first_cmd.c_str(), cmd_type = 3, cmd_num = 1, fd = fd);
-        smash.executeCommand(this->second_cmd.c_str(), cmd_type = 3, cmd_num = 2, fd = fd);
-    }
-    if(this->is4()) {
-        smash.executeCommand(this->first_cmd.c_str(), cmd_type = 4, cmd_num = 1, fd = fd);
-        smash.executeCommand(this->second_cmd.c_str(), cmd_type = 4, cmd_num = 2, fd = fd);
-    }
-}
-*/
 
 void PipeCommand::execute() {
     if(!this->exe) {
@@ -858,7 +816,6 @@ void PipeCommand::execute() {
             dup2(fd[1], 1);
             close(fd[0]);
             close(fd[1]);
-            cout << "FIRST: " << this->first_cmd << endl;
             smash.executeCommand(this->first_cmd.c_str(), false);
             return;
         }
@@ -867,7 +824,6 @@ void PipeCommand::execute() {
             dup2(fd[0], 0);
             close(fd[0]);
             close(fd[1]);
-            cout << "SECOND: " << this->second_cmd << endl;
             smash.executeCommand(this->second_cmd.c_str(), true);
             return;
         }
