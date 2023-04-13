@@ -865,6 +865,7 @@ void SmallShell::setMsg(const std::string msg) {
 
 const std::string SmallShell::getMsg() {
     return this->msg;
+    //
 }
 
 const std::string SmallShell::getLastDir() {
