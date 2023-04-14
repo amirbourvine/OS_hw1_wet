@@ -581,7 +581,7 @@ void ExternalCommand::execute() {
                 num = execlp("/bin/bash", "/bin/bash", "-c", this->getCmdLine().c_str(), nullptr);
                 if(num==-1)
                     perror("smash error: execlp failed");
-                return;
+                exit(0);
             }
             else{//father
                 this->smash->add_job(this, pid);
@@ -595,7 +595,7 @@ void ExternalCommand::execute() {
                 num = execlp("/bin/bash", "/bin/bash", "-c", this->getCmdLine().c_str(), nullptr);
                 if(num==-1)
                     perror("smash error: execlp failed");
-                return;
+                exit(0);
             }
             else{//father
                 this->smash->set_foreground_job_pid(pid);
@@ -615,7 +615,7 @@ void ExternalCommand::execute() {
                 num = execvp(this->command, this->args);
                 if(num==-1)
                     perror("smash error: execvp failed");
-                return;
+                exit(0);
             }
             else{//father
                 this->smash->add_job(this, pid);
@@ -629,7 +629,7 @@ void ExternalCommand::execute() {
                 num = execvp(this->command, this->args);
                 if(num==-1)
                     perror("smash error: execvp failed");
-                return;
+                exit(0);
             }
             else{//father
                 this->smash->set_foreground_job_pid(pid);
