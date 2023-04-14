@@ -786,6 +786,8 @@ bool PipeCommand::is4() {
 PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line){
     this->exe = true;
     this->initial_cmd_line = cmd_line;
+    this->std_out = -1;
+    this->std_err = -1;
 
     char* final_cmd = strdup(cmd_line);
     _removeBackgroundSign(final_cmd);
@@ -808,51 +810,56 @@ void PipeCommand::execute() {
     int fd[2];
     pipe(fd);
 
-    pid_t pid1, pid2;
+    pid_t pid;
 
     if(this->is3()) {
-        if ((pid1 = fork()) == 0) {
-            // first child
+        if ((pid = fork()) == 0) {
+            //child
+            dup2(fd[0], 0);
+            close(fd[0]);
+            close(fd[1]);
+            smash.executeCommand(this->second_cmd.c_str(), true);
+            exit(0);
+        }
+        else{
+            //father
+            this->std_out = dup(1);
             dup2(fd[1], 1);
             close(fd[0]);
             close(fd[1]);
             smash.executeCommand(this->first_cmd.c_str(), false);
-            exit(0);
-        }
-        if ((pid2 = fork()) == 0) {
-            // second child
-            dup2(fd[0], 0);
-            close(fd[0]);
-            close(fd[1]);
-            smash.executeCommand(this->second_cmd.c_str(), true);
-            exit(0);
         }
     }
 
     if(this->is4()) {
-        if ((pid1 = fork()) == 0) {
-            // first child
-            dup2(fd[1], 2);
-            close(fd[0]);
-            close(fd[1]);
-            smash.executeCommand(this->first_cmd.c_str(), false);
-            exit(0);
-        }
-        if ((pid2 = fork()) == 0) {
-            // second child
+        if ((pid = fork()) == 0) {
+            //child
             dup2(fd[0], 0);
             close(fd[0]);
             close(fd[1]);
             smash.executeCommand(this->second_cmd.c_str(), true);
             exit(0);
         }
+        else{
+            //father
+            this->std_err = dup(2);
+            dup2(fd[1], 2);
+            close(fd[0]);
+            close(fd[1]);
+            smash.executeCommand(this->first_cmd.c_str(), false);
+        }
     }
 
-    close(fd[0]);
-    close(fd[1]);
+    if(this->std_out != -1){
+        dup2(this->std_out, 1);
+        close(this->std_out);
+    }
+    if(this->std_err != -1) {
+        dup2(this->std_err, 2);
+        close(this->std_err);
+    }
 
-    waitpid(pid1, NULL, WUNTRACED);
-    waitpid(pid2, NULL, WUNTRACED);
+    waitpid(pid, NULL, WUNTRACED);
 
 }
 

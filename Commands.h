@@ -39,6 +39,8 @@ class PipeCommand : public Command {
     std::string first_cmd;
     std::string second_cmd;
     bool exe;
+    int std_out;
+    int std_err;
 public:
     PipeCommand(const char* cmd_line);
     virtual ~PipeCommand() {}
