@@ -971,6 +971,8 @@ void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd) {
     // TODO: Add your implementation here
     // for example:
     std::string final_cmd = cmd_line;
+
+    /*
     if(is_pipe_second_cmd){
         char temp[200];
         read(0, temp, 200);
@@ -980,7 +982,7 @@ void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd) {
 
         cout <<"FINAL_SECOND: " << final_cmd <<  endl;
     }
-
+    */
 
     Command* cmd = CreateCommand(final_cmd.c_str());
     cmd->execute();
