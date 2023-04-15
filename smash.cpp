@@ -12,7 +12,12 @@ int main(int argc, char* argv[]) {
     if(signal(SIGINT , ctrlCHandler)==SIG_ERR) {
         perror("smash error: failed to set ctrl-C handler");
     }
-    if(sigaction(SIGALRM, alarmHandler, NULL) == SIG_ERR){
+
+    struct sigaction sa;
+    sa.sa_handler = alarmHandler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    if (sigaction(SISIGALRMGINT, &sa, NULL) == -1) {
         perror("smash error: failed to set alarm handler");
     }
 
