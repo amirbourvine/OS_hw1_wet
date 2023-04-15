@@ -179,10 +179,13 @@ public:
     void execute() override;
 };
 
-class SetcoreCommand : public BuiltInCommand {
-    // TODO: Add your data members
+class SetcoreCommand : public Command {
+    JobsList* list;
+    int job_id;
+    int core_num;
+    bool exe;
 public:
-    SetcoreCommand(const char* cmd_line);
+    SetcoreCommand(const char* cmd_line, JobsList *jobs);
     virtual ~SetcoreCommand() {}
     void execute() override;
 };

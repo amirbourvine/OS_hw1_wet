@@ -6,8 +6,9 @@
 #include <sys/wait.h>
 #include <iomanip>
 #include <fcntl.h>
+#include <sched.h>
 #include "Commands.h"
-
+#define _GNU_SOURCE
 
 using namespace std;
 
@@ -894,6 +895,47 @@ void PipeCommand::execute() {
     close(fd[1]);
 }
 
+SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : Command(cmd_line){
+    this->list = jobs;
+    this->exe = true;
+    char* args[20];
+    char* cmd = strdup(cmd_line);
+    _removeBackgroundSign(cmd);//lose &
+    int num = _parseCommandLine(cmd, args);
+    if(num == 3){
+        this->job_id = stoi(args[1]);
+        if(!jobs->exsits(this->job_id)){
+            cerr << "smash error: setcore: job-id " << std::to_string(this->job_id) <<" does not exist" << endl;
+            this->exe = false;
+            return;
+        }
+       this->core_num = stoi(args[2]);
+        char path[256];
+        sprintf(path, "/proc/sys/kernel/core_pattern.%d", core_num);
+        int result = access(path, F_OK);
+        if (result != 0) {
+            cerr << "smash error: setcore: invalid core number" << endl;
+        }
+    }
+    else{
+        cerr << "smash error: setcore: invalid arguments" << endl;
+        this->exe = false;
+    }
+}
+void SetcoreCommand::execute() {
+    if(this->exe == false){
+        return;
+    }
+    JobEntry* job = this->list->getJobById(this->job_id);
+
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(core_num, &cpuset);
+    if(sched_setaffinity(0, sizeof(cpu_set_t), &cpuset) == -1){
+        perror("smash error: kill failed");
+        return;
+    }
+}
 
 void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
     this->killFinishedJobs();
