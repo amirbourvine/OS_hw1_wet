@@ -976,6 +976,34 @@ void GetFileTypeCommand::execute() {
         << file_size << " bytes" << endl;
 }
 
+ChmodCommand::ChmodCommand(const char *cmd_line) : BuiltInCommand(cmd_line){
+    this->exe = true;
+    this->exe = true;
+    char* args[20];
+    char* cmd = strdup(cmd_line);
+    _removeBackgroundSign(cmd);//lose &
+    int num = _parseCommandLine(cmd, args);
+    if(num == 3){
+        mode = stoi(args[1]);
+        path_to_file = args[2];
+    }
+    else{
+        cerr << "smash error: gettype: invalid arguments" << endl;
+        this->exe = false;
+    }
+}
+
+void ChmodCommand::execute() {
+    if(this->exe == false){
+        return;
+    }
+
+    if(chmod(path_to_file, mode) == -1){
+        perror("smash error: stat failed");;
+        return;
+    }
+}
+
 void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
     this->killFinishedJobs();
     this->jobs_list->addJob(cmd, pid, isStopped);

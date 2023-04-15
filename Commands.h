@@ -166,7 +166,9 @@ public:
 };
 
 class ChmodCommand : public BuiltInCommand {
-    // TODO: Add your data members
+    char* path_to_file;
+    mode_t mode;
+    bool exe;
 public:
     ChmodCommand(const char* cmd_line);
     virtual ~ChmodCommand() {}
