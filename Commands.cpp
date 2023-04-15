@@ -884,6 +884,7 @@ SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : Command(c
         int result = access(path, F_OK);
         if (result != 0) {
             cerr << "smash error: setcore: invalid core number" << endl;
+            this->exe = false;
         }
     }
     else{
@@ -901,7 +902,7 @@ void SetcoreCommand::execute() {
     CPU_ZERO(&cpuset);
     CPU_SET(core_num, &cpuset);
     if(sched_setaffinity(job->pid, sizeof(cpu_set_t), &cpuset) == -1){
-        perror("smash error: kill failed");
+        perror("smash error: setcore failed");
         return;
     }
 }
