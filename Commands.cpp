@@ -1113,6 +1113,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     if (firstWord.compare("getfiletype") == 0) {
         return new GetFileTypeCommand(cmd_line);
     }
+    if (firstWord.compare("chmod") == 0) {
+        return new ChmodCommand(cmd_line);
+    }
+
 
     //external commands
     return new ExternalCommand(cmd_line, this);
