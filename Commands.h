@@ -174,14 +174,15 @@ public:
 };
 
 class GetFileTypeCommand : public BuiltInCommand {
-    // TODO: Add your data members
+    std::string path_to_file;
+    bool exe;
 public:
     GetFileTypeCommand(const char* cmd_line);
     virtual ~GetFileTypeCommand() {}
     void execute() override;
 };
 
-class SetcoreCommand : public Command {
+class SetcoreCommand : public BuiltInCommand {
     JobsList* list;
     int job_id;
     int core_num;

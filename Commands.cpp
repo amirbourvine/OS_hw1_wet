@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <fcntl.h>
 #include <sched.h>
+#include <sys/stat.h>
 #include "Commands.h"
 #define _GNU_SOURCE
 
@@ -864,7 +865,7 @@ void PipeCommand::execute() {
 
 }
 
-SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : Command(cmd_line){
+SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line){
     this->list = jobs;
     this->exe = true;
     char* args[20];
@@ -887,7 +888,7 @@ SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : Command(c
             cerr << "smash error: setcore: invalid core number" << endl;
             this->exe = false;
         }
-         */
+        */
     }
     else{
         cerr << "smash error: setcore: invalid arguments" << endl;
@@ -910,6 +911,67 @@ void SetcoreCommand::execute() {
             perror("smash error: sched_setaffinity failed");
         return;
     }
+}
+
+GetFileTypeCommand::GetFileTypeCommand(const char* cmd_line) : BuiltInCommand(cmd_line){
+    this->exe = true;
+    char* args[20];
+    char* cmd = strdup(cmd_line);
+    _removeBackgroundSign(cmd);//lose &
+    int num = _parseCommandLine(cmd, args);
+    if(num == 2){
+        path_to_file = args[1];
+    }
+    else{
+        cerr << "smash error: gettype: invalid arguments" << endl;
+        this->exe = false;
+    }
+}
+
+void GetFileTypeCommand::execute() {
+    if(this->exe == false){
+        return;
+    }
+
+    struct stat buf;
+    std::string file_type;
+
+    if (stat(path_to_file, &buf) == -1) {
+        perror("smash error: stat failed");;
+        return;
+    }
+
+    switch (buf.st_mode & S_IFMT) {
+        case S_IFREG:
+            file_type = "regular file";
+            break;
+        case S_IFDIR:
+            file_type = "directory";
+            break;
+        case S_IFCHR:
+            file_type = "character device";
+            break;
+        case S_IFBLK:
+            file_type = "block device";
+            break;
+        case S_IFIFO:
+            file_type = "FIFO";;
+            break;
+        case S_IFLNK:
+            file_type = "symbolic link";
+            break;
+        case S_IFSOCK:
+            file_type = "socket";
+            break;
+        default:
+            printf("unknown\n");
+            break;
+    }
+
+    int file_size = buf.st_size;
+
+    cout << path_to_file << "'s type is " << file_type << " and take up "
+        << file_size << " bytes" << endl;
 }
 
 void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
@@ -1017,6 +1079,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     }
     if (firstWord.compare("setcore") == 0) {
         return new SetcoreCommand(cmd_line, this->jobs_list);
+    }
+    if (firstWord.compare("getfiletype") == 0) {
+        return new GetFileTypeCommand(cmd_line);
     }
 
     //external commands
