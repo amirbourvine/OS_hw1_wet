@@ -7,7 +7,9 @@
 #include <iomanip>
 #include <fcntl.h>
 #include <sched.h>
+#include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include "Commands.h"
 #define _GNU_SOURCE
 
