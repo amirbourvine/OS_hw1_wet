@@ -900,7 +900,7 @@ void SetcoreCommand::execute() {
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     CPU_SET(core_num, &cpuset);
-    if(sched_setaffinity(0, sizeof(cpu_set_t), &cpuset) == -1){
+    if(sched_setaffinity(job->pid, sizeof(cpu_set_t), &cpuset) == -1){
         perror("smash error: kill failed");
         return;
     }
@@ -1010,7 +1010,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
         return new KillCommand(cmd_line, this->jobs_list);
     }
     if (firstWord.compare("setcore") == 0) {
-        return new KillCommand(cmd_line, this->jobs_list);
+        return new SetcoreCommand(cmd_line, this->jobs_list);
     }
 
     //external commands
