@@ -1012,7 +1012,7 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line) : BuiltInCommand(cmd_line) 
     //Create a string of the command
     std::string str_command = cmd;
     for(int i = 0; i < 2; ++i)
-        str_command = str_command.erase( 0,  str_command.find_first_not_of(WHITESPACE));
+        str_command = str_command.substr(str_command.find_first_of(" \t")+1);
 
     command = str_command.c_str();
 }
