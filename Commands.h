@@ -174,7 +174,7 @@ public:
 };
 
 class GetFileTypeCommand : public BuiltInCommand {
-    std::string path_to_file;
+    char* path_to_file;
     bool exe;
 public:
     GetFileTypeCommand(const char* cmd_line);
