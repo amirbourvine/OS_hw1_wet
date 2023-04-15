@@ -890,8 +890,7 @@ SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : Command(c
          */
     }
     else{
-        cerr << "what's goin on man" << endl;
-        //cerr << "smash error: setcore: invalid arguments" << endl;
+        cerr << "smash error: setcore: invalid arguments" << endl;
         this->exe = false;
     }
 }
