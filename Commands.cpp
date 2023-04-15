@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <signal.h>
 #include "Commands.h"
 #define _GNU_SOURCE
 
@@ -1018,15 +1019,17 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line) : BuiltInCommand(cmd_line) 
 }
 
 void TimeoutCommand::execute() {
+    if(command.compare(""))
+        return;
+
     pid_t pid = fork();
     if(pid==0){//son
         setpgrp();
-        int num = execl("/bin/sleep", "sleep", to_string(duration).c_str(), nullptr);
-        if(num==-1) {
-            perror("smash error: execl failed");
+        if(alarm(duration)==-1) {
+            perror("smash error: alarm failed");
             exit(0);
         }
-        cout << "tininie";
+
         exit(0);
     }
     else{//father
