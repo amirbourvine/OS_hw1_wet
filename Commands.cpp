@@ -820,6 +820,7 @@ void PipeCommand::execute() {
     if(this->is3()) {
         if ((pid = fork()) == 0) {
             //child
+            setpgrp();
             dup2(fd[0], 0);
             close(fd[0]);
             close(fd[1]);
@@ -839,6 +840,7 @@ void PipeCommand::execute() {
     if(this->is4()) {
         if ((pid = fork()) == 0) {
             //child
+            setpgrp();
             dup2(fd[0], 0);
             close(fd[0]);
             close(fd[1]);
@@ -999,7 +1001,7 @@ void ChmodCommand::execute() {
     }
 
     if(chmod(path_to_file, mode) == -1){
-        perror("smash error: stat failed");;
+        perror("smash error: chmod failed");
         return;
     }
 }
