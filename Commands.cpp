@@ -1021,9 +1021,11 @@ void TimeoutCommand::execute() {
     pid_t pid = fork();
     if(pid==0){//son
         setpgrp();
-        int num = execlp("/bin/sleep", "sleep", duration, nullptr);
-        if(num==-1)
-            perror("smash error: execlp failed");
+        int num = execl("/bin/sleep", "sleep", to_string(duration).c_str(), nullptr);
+        if(num==-1) {
+            perror("smash error: execl failed");
+            exit(0);
+        }
         cout << "tininie";
         exit(0);
     }
