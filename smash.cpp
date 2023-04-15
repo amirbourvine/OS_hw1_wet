@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
     if(signal(SIGINT , ctrlCHandler)==SIG_ERR) {
         perror("smash error: failed to set ctrl-C handler");
     }
-    if(sigacation(SIGALRM, alarmHandler) == SIG_ERR){
+    if(sigaction(SIGALRM, alarmHandler) == SIG_ERR){
         perror("smash error: failed to set alarm handler");
     }
 
