@@ -158,7 +158,8 @@ public:
 
 class TimeoutCommand : public BuiltInCommand {
 /* Bonus */
-// TODO: Add your data members
+    int duration;
+    std::string command;
 public:
     explicit TimeoutCommand(const char* cmd_line);
     virtual ~TimeoutCommand() {}

@@ -978,7 +978,6 @@ void GetFileTypeCommand::execute() {
 
 ChmodCommand::ChmodCommand(const char *cmd_line) : BuiltInCommand(cmd_line){
     this->exe = true;
-    this->exe = true;
     char* args[20];
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
@@ -1002,6 +1001,23 @@ void ChmodCommand::execute() {
         perror("smash error: stat failed");;
         return;
     }
+}
+
+TimeoutCommand::TimeoutCommand(const char *cmd_line) : BuiltInCommand(cmd_line) {
+    char* args[20];
+    char* cmd = strdup(cmd_line);
+    duration = stoi(args[1]);
+
+    //Create a string of the command
+    std::string str_command = cmd;
+    for(int i = 0; i < 2; ++i)
+        str_command = str_command.erase( 0,  str_command.find_first_not_of(WHITESPACE));
+
+    command = str_command.c_str();
+}
+
+void TimeoutCommand::execute() {
+    cout << command << endl;
 }
 
 void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
@@ -1116,7 +1132,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     if (firstWord.compare("chmod") == 0) {
         return new ChmodCommand(cmd_line);
     }
-
+    if (firstWord.compare("timeout") == 0) {
+        return new TimeoutCommand(cmd_line);
+    }
 
     //external commands
     return new ExternalCommand(cmd_line, this);
