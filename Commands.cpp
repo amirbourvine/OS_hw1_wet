@@ -879,13 +879,15 @@ SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : Command(c
             return;
         }
        this->core_num = stoi(args[2]);
+        /*
         char path[256];
-        sprintf(path, "/proc/sys/kernel/core_pattern.%d", core_num);
+        sprintf(path, "/proc/sys/kernel/core_pattern.%d", this->core_num);
         int result = access(path, F_OK);
         if (result != 0) {
             cerr << "smash error: setcore: invalid core number" << endl;
             this->exe = false;
         }
+         */
     }
     else{
         cerr << "smash error: setcore: invalid arguments" << endl;
@@ -902,7 +904,10 @@ void SetcoreCommand::execute() {
     CPU_ZERO(&cpuset);
     CPU_SET(core_num, &cpuset);
     if(sched_setaffinity(job->pid, sizeof(cpu_set_t), &cpuset) == -1){
-        perror("smash error: setcore failed");
+        if(errno == EINVAL)
+            cerr << "smash error: setcore: invalid core number" << endl;
+        else
+            perror("smash error: sched_setaffinity failed");
         return;
     }
 }
