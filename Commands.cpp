@@ -1018,7 +1018,18 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line) : BuiltInCommand(cmd_line) 
 }
 
 void TimeoutCommand::execute() {
-    cout << command << endl;
+    pid_t pid = fork();
+    if(pid==0){//son
+        setpgrp();
+        int num = execlp("/bin/sleep", "sleep", duration, nullptr);
+        if(num==-1)
+            perror("smash error: execlp failed");
+        cout << "tininie";
+        exit(0);
+    }
+    else{//father
+        return;
+    }
 }
 
 void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
