@@ -1006,6 +1006,7 @@ void ChmodCommand::execute() {
 TimeoutCommand::TimeoutCommand(const char *cmd_line) : BuiltInCommand(cmd_line) {
     char* args[20];
     char* cmd = strdup(cmd_line);
+    _parseCommandLine(cmd, args);
     duration = stoi(args[1]);
 
     //Create a string of the command
