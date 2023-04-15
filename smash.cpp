@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     sa.sa_handler = alarmHandler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
-    if (sigaction(SISIGALRMGINT, &sa, NULL) == -1) {
+    if (sigaction(SIGALRM, &sa, NULL) == -1) {
         perror("smash error: failed to set alarm handler");
     }
 
