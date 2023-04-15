@@ -1009,6 +1009,9 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     if (firstWord.compare("kill") == 0) {
         return new KillCommand(cmd_line, this->jobs_list);
     }
+    if (firstWord.compare("setcore") == 0) {
+        return new KillCommand(cmd_line, this->jobs_list);
+    }
 
     //external commands
     return new ExternalCommand(cmd_line, this);
