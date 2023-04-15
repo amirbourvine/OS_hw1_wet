@@ -152,8 +152,7 @@ bool is_Built_in(const char *cmd_line){
 }
 
 // TODO: Add your implementation for classes in Commands.h
-chpromptCommand::chpromptCommand(const char *cmd_line, SmallShell* smash) : BuiltInCommand(cmd_line){
-    this->smash = smash;
+chpromptCommand::chpromptCommand(const char *cmd_line) : BuiltInCommand(cmd_line){
     char* args[20];
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
@@ -167,7 +166,8 @@ chpromptCommand::chpromptCommand(const char *cmd_line, SmallShell* smash) : Buil
 }
 
 void chpromptCommand::execute() {
-    this->smash->setMsg(this->msg);
+    SmallShell& smash = SmallShell::getInstance();
+    smash.setMsg(this->msg);
 }
 
 ShowPidCommand::ShowPidCommand(const char *cmd_line) : BuiltInCommand(cmd_line){}
@@ -409,7 +409,7 @@ void ForegroundCommand::execute() {
         return;
     }
     this->list->removeJobById(this->job_id);
-    waitpid(job->pid, NULL, 0);
+    waitpid(job->pid, NULL, WUNTRACED);
 }
 
 BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line){
@@ -582,7 +582,7 @@ void ExternalCommand::execute() {
                 num = execlp("/bin/bash", "/bin/bash", "-c", this->getCmdLine().c_str(), nullptr);
                 if(num==-1)
                     perror("smash error: execlp failed");
-                return;
+                exit(0);
             }
             else{//father
                 this->smash->add_job(this, pid);
@@ -596,7 +596,7 @@ void ExternalCommand::execute() {
                 num = execlp("/bin/bash", "/bin/bash", "-c", this->getCmdLine().c_str(), nullptr);
                 if(num==-1)
                     perror("smash error: execlp failed");
-                return;
+                exit(0);
             }
             else{//father
                 this->smash->set_foreground_job_pid(pid);
@@ -616,7 +616,7 @@ void ExternalCommand::execute() {
                 num = execvp(this->command, this->args);
                 if(num==-1)
                     perror("smash error: execvp failed");
-                return;
+                exit(0);
             }
             else{//father
                 this->smash->add_job(this, pid);
@@ -630,7 +630,7 @@ void ExternalCommand::execute() {
                 num = execvp(this->command, this->args);
                 if(num==-1)
                     perror("smash error: execvp failed");
-                return;
+                exit(0);
             }
             else{//father
                 this->smash->set_foreground_job_pid(pid);
@@ -768,7 +768,7 @@ int RedirectionCommand::handle_IO_Command_After(const char *cmd_line) {
 void RedirectionCommand::execute() {
     if(this->exe) {
         SmallShell &smash = SmallShell::getInstance();
-        smash.executeCommand(this->getCmdLine().c_str());
+        smash.executeCommand(this->getCmdLine().c_str(), false);
     }
     int err = handle_IO_Command_After(this->initial_cmd_line);
     if(err == -1){
@@ -787,6 +787,8 @@ bool PipeCommand::is4() {
 PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line){
     this->exe = true;
     this->initial_cmd_line = cmd_line;
+    this->std_out = -1;
+    this->std_err = -1;
 
     char* final_cmd = strdup(cmd_line);
     _removeBackgroundSign(final_cmd);
@@ -801,50 +803,6 @@ PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line){
     }
 }
 
-/*
-void PipeCommand::handle_bi_bi(int *fd) {
-    if(is_Built_in((this->first_cmd).c_str()) && is_Built_in((this->second_cmd).c_str())){
-        if(this->is3()) {
-            this->std_in = dup(0);
-            this->std_out = dup(1);
-
-            dup2(fd[0], 0);
-            dup2(fd[1], 1);
-
-            close(fd[0]);
-            close(fd[1]);
-        }
-        if(this->is4()) {
-            this->std_err = dup(2);
-            this->std_out = dup(1);
-
-            dup2(fd[0], 0);
-            dup2(fd[1], 2);
-
-            close(fd[0]);
-            close(fd[1]);
-        }
-
-        SmallShell &smash = SmallShell::getInstance();
-        smash.executeCommand(this->first_cmd.c_str());
-        smash.executeCommand(this->second_cmd.c_str());
-    }
-}
-
-
-void PipeCommand::handle_pipe(int *fd) {
-    SmallShell &smash = SmallShell::getInstance();
-    if(this->is3()) {
-        smash.executeCommand(this->first_cmd.c_str(), cmd_type = 3, cmd_num = 1, fd = fd);
-        smash.executeCommand(this->second_cmd.c_str(), cmd_type = 3, cmd_num = 2, fd = fd);
-    }
-    if(this->is4()) {
-        smash.executeCommand(this->first_cmd.c_str(), cmd_type = 4, cmd_num = 1, fd = fd);
-        smash.executeCommand(this->second_cmd.c_str(), cmd_type = 4, cmd_num = 2, fd = fd);
-    }
-}
-*/
-
 void PipeCommand::execute() {
     if(!this->exe) {
         return;
@@ -853,46 +811,57 @@ void PipeCommand::execute() {
     int fd[2];
     pipe(fd);
 
+    pid_t pid;
+
     if(this->is3()) {
-        if (fork() == 0) {
-            // first child
-            dup2(fd[1], 1);
-            close(fd[0]);
-            close(fd[1]);
-            smash.executeCommand(this->first_cmd.c_str());
-            return;
-        }
-        if (fork() == 0) {
-            // second child
+        if ((pid = fork()) == 0) {
+            //child
             dup2(fd[0], 0);
             close(fd[0]);
             close(fd[1]);
-            smash.executeCommand(this->second_cmd.c_str());
-            return;
+            smash.executeCommand(this->second_cmd.c_str(), true);
+            exit(0);
+        }
+        else{
+            //father
+            this->std_out = dup(1);
+            dup2(fd[1], 1);
+            close(fd[0]);
+            close(fd[1]);
+            smash.executeCommand(this->first_cmd.c_str(), false);
         }
     }
 
     if(this->is4()) {
-        if (fork() == 0) {
-            // first child
-            dup2(fd[1], 2);
-            close(fd[0]);
-            close(fd[1]);
-            smash.executeCommand(this->first_cmd.c_str());
-            return;
-        }
-        if (fork() == 0) {
-            // second child
+        if ((pid = fork()) == 0) {
+            //child
             dup2(fd[0], 0);
             close(fd[0]);
             close(fd[1]);
-            smash.executeCommand(this->second_cmd.c_str());
-            return;
+            smash.executeCommand(this->second_cmd.c_str(), true);
+            exit(0);
+        }
+        else{
+            //father
+            this->std_err = dup(2);
+            dup2(fd[1], 2);
+            close(fd[0]);
+            close(fd[1]);
+            smash.executeCommand(this->first_cmd.c_str(), false);
         }
     }
 
-    close(fd[0]);
-    close(fd[1]);
+    if(this->std_out != -1){
+        dup2(this->std_out, 1);
+        close(this->std_out);
+    }
+    if(this->std_err != -1) {
+        dup2(this->std_err, 2);
+        close(this->std_err);
+    }
+
+    waitpid(pid, NULL, WUNTRACED);
+
 }
 
 SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : Command(cmd_line){
@@ -1014,7 +983,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     //built-in commands
 
     if (firstWord.compare("chprompt") == 0) {
-        return new chpromptCommand(cmd_line, this);
+        return new chpromptCommand(cmd_line);
     }
     if (firstWord.compare("showpid") == 0) {
         return new ShowPidCommand(cmd_line);
@@ -1045,9 +1014,10 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     return new ExternalCommand(cmd_line, this);
 }
 
-void SmallShell::executeCommand(const char *cmd_line) {
+void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd) {
     // TODO: Add your implementation here
     // for example:
+
     Command* cmd = CreateCommand(cmd_line);
     cmd->execute();
 

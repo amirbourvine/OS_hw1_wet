@@ -39,6 +39,8 @@ class PipeCommand : public Command {
     std::string first_cmd;
     std::string second_cmd;
     bool exe;
+    int std_out;
+    int std_err;
 public:
     PipeCommand(const char* cmd_line);
     virtual ~PipeCommand() {}
@@ -222,7 +224,7 @@ public:
         return instance;
     }
     ~SmallShell();
-    void executeCommand(const char* cmd_line);
+    void executeCommand(const char* cmd_line, bool is_pipe_second_cmd = false);
     // TODO: add extra methods as needed
     void setMsg(std::string msg);
     const std::string getMsg();
@@ -239,9 +241,8 @@ public:
 
 class chpromptCommand : public BuiltInCommand {
     std::string msg;
-    SmallShell* smash;
 public:
-    chpromptCommand(const char* cmd_line, SmallShell* smash);
+    chpromptCommand(const char* cmd_line);
     ~chpromptCommand() = default;
     void execute() override;
 };

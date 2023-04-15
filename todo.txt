@@ -1,8 +1,9 @@
 special:
 
-#continue for other cases of pipe
+need to re-consider all pipe implementation:
+1) built-in should run on smash process (matters in showpid for instance)
+2) i dont think that showpid | chprompt is equivalent to chprompt <output of showpid>
 
-1)the rest of IO/PIPE command..
 2)then the rest of the commands
 
 #note that SIG_ALRM is with the bonus command
