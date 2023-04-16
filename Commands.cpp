@@ -1021,21 +1021,12 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line) : BuiltInCommand(cmd_line) 
 }
 
 void TimeoutCommand::execute() {
-    if(command.compare(""))
-        return;
+    /*if(command.compare(""))
+        return;*/
 
-    pid_t pid = fork();
-    if(pid==0){//son
-        setpgrp();
-        if(alarm(duration)==-1) {
-            perror("smash error: alarm failed");
-            exit(0);
-        }
-
+    if(alarm(duration)==-1) {
+        perror("smash error: alarm failed");
         exit(0);
-    }
-    else{//father
-        return;
     }
 }
 
