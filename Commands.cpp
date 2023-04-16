@@ -152,6 +152,19 @@ bool is_Built_in(const char *cmd_line){
     if (firstWord.compare("kill") == 0) {
         return true;
     }
+    if (firstWord.compare("setcore") == 0) {
+        return true;
+    }
+    if (firstWord.compare("getfiletype") == 0) {
+        return true;
+    }
+    if (firstWord.compare("chmod") == 0) {
+        return true;
+    }
+    if (firstWord.compare("timeout") == 0) {
+        return true;
+    }
+
     return false;
 }
 
@@ -561,35 +574,60 @@ bool isComplex(const char* cmd_line){
     return false;
 }
 
-ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash) : Command(cmd_line){
+ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool timeout) : Command(cmd_line){
     this->isback = _isBackgroundComamnd(cmd_line);
     this->smash = smash;
 
     char* cmd = strdup(cmd_line);
+
     _removeBackgroundSign(cmd);//lose &
     string cmd_s = _trim(string(cmd));
-    this->command = cmd_s.substr(0, cmd_s.find_first_of(" \n")).c_str();
+
+    if(this->isback){
+        this->smash->add_job(this, getpid());
+    }
+    else{
+        this->smash->set_foreground_job_pid(getpid());
+        this->smash->set_foreground_job_cmd(this);
+    }
+
+
+    std::string str_command = cmd;
+    for(int i = 0; i < 2; ++i)
+        str_command = str_command.substr(str_command.find_first_of(" \t")+1);
+
+    if(timeout){
+        this->setCmdLine(str_command.c_str());
+        cmd_s = str_command;
+    }
+
+    this->command = cmd_s.substr(0, cmd_s.find_first_of(" \t")).c_str();
+
 
     this->args = new char*[20];
-    _parseCommandLine(cmd, this->args);//without the &
+    _parseCommandLine(cmd_s.c_str(), this->args);//without the &
 
     this->iscomplex = isComplex(cmd_line);
 }
 
 void ExternalCommand::execute() {
     int num;
+    std::string str_command = this->getCmdLine();
+    for(int i = 0; i < 2; ++i)
+        str_command = str_command.substr(str_command.find_first_of(" \t")+1);
+
     if(this->iscomplex){//complex
         if(this->isback){//back
             pid_t pid = fork();
             if(pid==0){//son
                 setpgrp();
-                num = execlp("/bin/bash", "/bin/bash", "-c", this->getCmdLine().c_str(), nullptr);
+                num = execlp("/bin/bash", "/bin/bash", "-c",
+                             this->getCmdLine().c_str(), nullptr);
                 if(num==-1)
                     perror("smash error: execlp failed");
                 exit(0);
             }
             else{//father
-                this->smash->add_job(this, pid);
                 return;
             }
         }
@@ -603,8 +641,6 @@ void ExternalCommand::execute() {
                 exit(0);
             }
             else{//father
-                this->smash->set_foreground_job_pid(pid);
-                this->smash->set_foreground_job_cmd(this);
                 waitpid(pid, NULL, WUNTRACED);
                 this->smash->set_foreground_job_pid(-1);
                 this->smash->set_foreground_job_cmd(nullptr);
@@ -623,7 +659,6 @@ void ExternalCommand::execute() {
                 exit(0);
             }
             else{//father
-                this->smash->add_job(this, pid);
                 return;
             }
         }
@@ -637,8 +672,6 @@ void ExternalCommand::execute() {
                 exit(0);
             }
             else{//father
-                this->smash->set_foreground_job_pid(pid);
-                this->smash->set_foreground_job_cmd(this);
                 waitpid(pid, NULL, WUNTRACED);
                 this->smash->set_foreground_job_pid(-1);
                 this->smash->set_foreground_job_cmd(nullptr);
@@ -1006,7 +1039,20 @@ void ChmodCommand::execute() {
     }
 }
 
-TimeoutCommand::TimeoutCommand(const char *cmd_line) : BuiltInCommand(cmd_line) {
+timeoutEntriesList::timeoutEntriesList() {
+    this->list = std::vector<timeoutEntry*>();
+}
+
+timeoutEntriesList::~timeoutEntriesList(){
+    for(auto j : list)
+        delete j;
+}
+
+//TODO: finish implenting timeoutEntriesList and add it to the shell and then to the command
+
+TimeoutCommand::TimeoutCommand(const char *cmd_line, SmallShell* smash) : BuiltInCommand(cmd_line) {
+    this->smash = smash;
+
     char* args[20];
     char* cmd = strdup(cmd_line);
     _parseCommandLine(cmd, args);
@@ -1024,10 +1070,13 @@ void TimeoutCommand::execute() {
     /*if(command.compare(""))
         return;*/
 
+
     if(alarm(duration)==-1) {
         perror("smash error: alarm failed");
         exit(0);
     }
+
+    smash->executeCommand(this->command, false, true);
 }
 
 void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
@@ -1087,7 +1136,7 @@ SmallShell::~SmallShell() {
 /**
 * Creates and returns a pointer to Command class which matches the given command line (cmd_line)
 */
-Command * SmallShell::CreateCommand(const char* cmd_line) {
+Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
     // For example:
 
     char* cmd = strdup(cmd_line);
@@ -1142,19 +1191,19 @@ Command * SmallShell::CreateCommand(const char* cmd_line) {
     if (firstWord.compare("chmod") == 0) {
         return new ChmodCommand(cmd_line);
     }
-    if (firstWord.compare("timeout") == 0) {
-        return new TimeoutCommand(cmd_line);
+    if (firstWord.compare("timeout") == 0 && !timeout) {
+        return new TimeoutCommand(cmd_line, this);
     }
 
     //external commands
-    return new ExternalCommand(cmd_line, this);
+    return new ExternalCommand(cmd_line, this, timeout);
 }
 
-void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd) {
+void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd, bool timeout) {
     // TODO: Add your implementation here
     // for example:
 
-    Command* cmd = CreateCommand(cmd_line);
+    Command* cmd = CreateCommand(cmd_line, timeout);
     cmd->execute();
 
     delete cmd;

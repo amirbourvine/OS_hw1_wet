@@ -156,14 +156,29 @@ public:
     // TODO: Add extra methods or modify exisitng ones as needed
 };
 
-class TimeoutCommand : public BuiltInCommand {
-/* Bonus */
-    int duration;
-    std::string command;
+struct timeoutEntry{
+    pid_t pid;
+    time_t in_time;
+
+    timeoutEntry(int pid, int duration) : pid(pid){
+        time_t temp = time(nullptr);
+        if(temp == ((time_t) -1)){
+            perror("smash error: time failed");
+        }
+
+        in_time = temp + duration;
+    }
+} typedef timeoutEntry;
+
+class timeoutEntriesList {
 public:
-    explicit TimeoutCommand(const char* cmd_line);
-    virtual ~TimeoutCommand() {}
-    void execute() override;
+    // TODO: Add your data members
+    std::vector<timeoutEntry*> list;
+public:
+    timeoutEntriesList();
+    ~timeoutEntriesList();
+    void addTimeoutEntry(pid_t pid, int duration);
+    void handleAlarm();
 };
 
 class ChmodCommand : public BuiltInCommand {
@@ -218,7 +233,7 @@ private:
     Command* foreground_job_cmd;
     SmallShell();
 public:
-    Command *CreateCommand(const char* cmd_line);
+    Command *CreateCommand(const char* cmd_line, bool isTimeoutCommand);
     SmallShell(SmallShell const&)      = delete; // disable copy ctor
     void operator=(SmallShell const&)  = delete; // disable = operator
     static SmallShell& getInstance() // make SmallShell singleton
@@ -228,7 +243,7 @@ public:
         return instance;
     }
     ~SmallShell();
-    void executeCommand(const char* cmd_line, bool is_pipe_second_cmd = false);
+    void executeCommand(const char* cmd_line, bool is_pipe_second_cmd = false, bool timeout = false);
     // TODO: add extra methods as needed
     void setMsg(std::string msg);
     const std::string getMsg();
@@ -278,7 +293,7 @@ class ExternalCommand : public Command {
     bool iscomplex;
     SmallShell* smash;
 public:
-    ExternalCommand(const char* cmd_line, SmallShell* smash);
+    ExternalCommand(const char* cmd_line, SmallShell* smash, bool timeout);
     virtual ~ExternalCommand() {}
     void execute() override;
 };
@@ -303,6 +318,19 @@ class BackgroundCommand : public BuiltInCommand {
 public:
     BackgroundCommand(const char* cmd_line, JobsList* jobs);
     virtual ~BackgroundCommand() {}
+    void execute() override;
+};
+
+
+class TimeoutCommand : public BuiltInCommand {
+/* Bonus */
+    int duration;
+    const char* command;
+    SmallShell* smash;
+
+public:
+    explicit TimeoutCommand(const char* cmd_line,  SmallShell* smash);
+    virtual ~TimeoutCommand() {}
     void execute() override;
 };
 
