@@ -575,8 +575,6 @@ bool isComplex(const char* cmd_line){
 }
 
 ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool timeout) : Command(cmd_line){
-    cout << "1";
-
     this->isback = _isBackgroundComamnd(cmd_line);
     this->smash = smash;
 
@@ -585,37 +583,26 @@ ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool t
     _removeBackgroundSign(cmd);//lose &
     string cmd_s = _trim(string(cmd));
 
-    if(this->isback){
-        this->smash->add_job(this, getpid());
-    }
-    else{
-        this->smash->set_foreground_job_pid(getpid());
-        this->smash->set_foreground_job_cmd(this);
-    }
-
-    std::string str_command = cmd;
-    for(int i = 0; i < 2; ++i)
-        str_command = str_command.substr(str_command.find_first_of(" \t")+1);
-
     if(timeout){
-        this->setCmdLine(str_command.c_str());
-        cmd_s = str_command;
+        for(int i = 0; i < 2; ++i)
+            cmd_s = cmd_s.substr(cmd_s.find_first_of(" \t")+1);
     }
-
-    this->command = cmd_s.substr(0, cmd_s.find_first_of(" \t")).c_str();
-
 
     this->args = new char*[20];
     _parseCommandLine(cmd_s.c_str(), this->args);//without the &
 
     this->iscomplex = isComplex(cmd_line);
+
+    if(this->iscomplex){
+        this->command = cmd_s.c_str();
+    }
+    else{
+        this->command = cmd_s.substr(0, cmd_s.find_first_of(" \t")).c_str();
+    }
 }
 
 void ExternalCommand::execute() {
     int num;
-    std::string str_command = this->getCmdLine();
-    for(int i = 0; i < 2; ++i)
-        str_command = str_command.substr(str_command.find_first_of(" \t")+1);
 
     if(this->iscomplex){//complex
         if(this->isback){//back
@@ -623,12 +610,13 @@ void ExternalCommand::execute() {
             if(pid==0){//son
                 setpgrp();
                 num = execlp("/bin/bash", "/bin/bash", "-c",
-                             this->getCmdLine().c_str(), nullptr);
+                             this->command, nullptr);
                 if(num==-1)
                     perror("smash error: execlp failed");
                 exit(0);
             }
             else{//father
+                this->smash->add_job(this, pid);
                 return;
             }
         }
@@ -636,12 +624,15 @@ void ExternalCommand::execute() {
             pid_t pid = fork();
             if(pid==0){//son
                 setpgrp();
-                num = execlp("/bin/bash", "/bin/bash", "-c", this->getCmdLine().c_str(), nullptr);
+                num = execlp("/bin/bash", "/bin/bash", "-c",
+                             this->command, nullptr);
                 if(num==-1)
                     perror("smash error: execlp failed");
                 exit(0);
             }
             else{//father
+                this->smash->set_foreground_job_pid(pid);
+                this->smash->set_foreground_job_cmd(this);
                 waitpid(pid, NULL, WUNTRACED);
                 this->smash->set_foreground_job_pid(-1);
                 this->smash->set_foreground_job_cmd(nullptr);
@@ -660,6 +651,7 @@ void ExternalCommand::execute() {
                 exit(0);
             }
             else{//father
+                this->smash->add_job(this, pid);
                 return;
             }
         }
@@ -673,6 +665,8 @@ void ExternalCommand::execute() {
                 exit(0);
             }
             else{//father
+                this->smash->set_foreground_job_pid(pid);
+                this->smash->set_foreground_job_cmd(this);
                 waitpid(pid, NULL, WUNTRACED);
                 this->smash->set_foreground_job_pid(-1);
                 this->smash->set_foreground_job_cmd(nullptr);
