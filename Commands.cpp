@@ -590,6 +590,7 @@ ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool t
         this->smash->set_foreground_job_pid(getpid());
         this->smash->set_foreground_job_cmd(this);
     }
+    cout << 1;
 
 
     std::string str_command = cmd;
