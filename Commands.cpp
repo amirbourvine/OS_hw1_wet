@@ -575,6 +575,8 @@ bool isComplex(const char* cmd_line){
 }
 
 ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool timeout) : Command(cmd_line){
+    cout << "1";
+
     this->isback = _isBackgroundComamnd(cmd_line);
     this->smash = smash;
 
@@ -590,8 +592,6 @@ ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool t
         this->smash->set_foreground_job_pid(getpid());
         this->smash->set_foreground_job_cmd(this);
     }
-    cout << 1;
-
 
     std::string str_command = cmd;
     for(int i = 0; i < 2; ++i)
