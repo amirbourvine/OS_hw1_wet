@@ -159,26 +159,38 @@ public:
 struct timeoutEntry{
     pid_t pid;
     time_t in_time;
+    const char* command;
 
-    timeoutEntry(int pid, int duration) : pid(pid){
+    timeoutEntry(int pid, int duration, const char* command) : pid(pid){
         time_t temp = time(nullptr);
         if(temp == ((time_t) -1)){
             perror("smash error: time failed");
         }
 
         in_time = temp + duration;
+
+        this->command = command;
+    }
+
+    bool operator<(const timeoutEntry& a) const
+    {
+        return this->in_time < a.in_time;
     }
 } typedef timeoutEntry;
 
+
+
 class timeoutEntriesList {
 public:
-    // TODO: Add your data members
-    std::vector<timeoutEntry*> list;
+    std::vector<timeoutEntry> list;
+
 public:
     timeoutEntriesList();
-    ~timeoutEntriesList();
-    void addTimeoutEntry(pid_t pid, int duration);
-    void handleAlarm();
+    ~timeoutEntriesList() = default;
+    void addTimeoutEntry(pid_t pid, int duration, const char* command);
+    void setTopTimeoutPid(pid_t pid);
+    const char* getTopTimeoutCommand() const;
+    void removeTopTimeout();
 };
 
 class ChmodCommand : public BuiltInCommand {
@@ -231,6 +243,8 @@ private:
     JobsList* jobs_list;
     pid_t foreground_job_pid;
     Command* foreground_job_cmd;
+    timeoutEntriesList timeout_list;
+
     SmallShell();
 public:
     Command *CreateCommand(const char* cmd_line, bool isTimeoutCommand);
@@ -256,6 +270,11 @@ public:
     void set_foreground_job_cmd(Command* cmd);
     Command* get_foreground_job_cmd();
     int handle3_4(const char* cmd_line, int* std_in, int* std_out, int cmd_num);
+    void add_timeout(int duration, const char* command);
+    void set_top_timeout_pid(pid_t pid);
+    const char* get_top_timeout_command() const;
+    void remove_top_timeout();
+    void handleAlarm();
 };
 
 class chpromptCommand : public BuiltInCommand {

@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <signal.h>
+#include <algorithm>
 #include "Commands.h"
 #define _GNU_SOURCE
 
@@ -599,8 +600,6 @@ ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool t
     else{
         this->command = cmd_s.substr(0, cmd_s.find_first_of(" \t")).c_str();
     }
-
-    cout << strdup(this->command) << endl;
 }
 
 void ExternalCommand::execute() {
@@ -1037,15 +1036,27 @@ void ChmodCommand::execute() {
 }
 
 timeoutEntriesList::timeoutEntriesList() {
-    this->list = std::vector<timeoutEntry*>();
+    this->list = std::vector<timeoutEntry>();
 }
 
-timeoutEntriesList::~timeoutEntriesList(){
-    for(auto j : list)
-        delete j;
+void timeoutEntriesList::addTimeoutEntry(pid_t pid, int duration, const char* command){
+    timeoutEntry temp(pid, duration, command);
+
+    this->list.push_back(temp);
+    std::sort(this->list.begin(), this->list.end());
 }
 
-//TODO: finish implenting timeoutEntriesList and add it to the shell and then to the command
+void timeoutEntriesList::setTopTimeoutPid(pid_t pid){
+    this->list[0].pid = pid;
+}
+
+const char* timeoutEntriesList::getTopTimeoutCommand() const{
+    return this->list[0].command;
+}
+
+void timeoutEntriesList::removeTopTimeout(){
+    this->list.erase(this->list.begin());
+}
 
 TimeoutCommand::TimeoutCommand(const char *cmd_line, SmallShell* smash) : BuiltInCommand(cmd_line) {
     this->smash = smash;
@@ -1066,10 +1077,10 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line, SmallShell* smash) : BuiltI
 }
 
 void TimeoutCommand::execute() {
-    /*if(command.compare(""))
-        return;*/
-
     alarm(duration);
+
+    //pid will be defined later on in the external command fork
+    smash->add_timeout(this->duration, this->command);
 
     smash->executeCommand(this->command, false, true);
 }
@@ -1112,6 +1123,35 @@ void SmallShell::killFinishedJobs() {
 
 void SmallShell::setLastDir(const std::string last_dirr) {
     this->last_dir = last_dirr;
+}
+
+void SmallShell::add_timeout(int duration, const char* command){
+    //pid is 0 but will be updated later
+    this->timeout_list.addTimeoutEntry(0, duration, command);
+}
+
+void SmallShell::set_top_timeout_pid(pid_t pid){
+    this->timeout_list.setTopTimeoutPid(pid);
+}
+
+const char* SmallShell::get_top_timeout_command() const{
+    return this->timeout_list.getTopTimeoutCommand();
+}
+
+void SmallShell::remove_top_timeout(){
+    this->timeout_list.removeTopTimeout();
+}
+
+void SmallShell::handleAlarm(){
+    //Print the kill message
+    cout << "smash: " << this->get_top_timeout_command() << " timed out!" << endl;
+
+    //Kill the relevant process
+
+    //Signal a new alarm
+
+    //Remove the top timeout command
+    this->remove_top_timeout();
 }
 
 
