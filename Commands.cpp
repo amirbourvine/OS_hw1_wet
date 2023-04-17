@@ -1141,11 +1141,14 @@ SmallShell::~SmallShell() {
 */
 Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
     // For example:
+    cout << "0" << endl;
 
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
     string cmd_s = _trim(string(cmd));
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(WHITESPACE));
+
+    cout << "0 - 0" << endl;
 
     //special commands
     if(is_IO(cmd_line)){
@@ -1206,7 +1209,6 @@ Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
 void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd, bool timeout) {
     // TODO: Add your implementation here
     // for example:
-    cout << "0" << endl;
     Command* cmd = CreateCommand(cmd_line, timeout);
     cmd->execute();
 
