@@ -602,6 +602,8 @@ ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool t
 }
 
 void ExternalCommand::execute() {
+    cout << this->command << endl;
+
     int num;
 
     if(this->iscomplex){//complex
@@ -1071,7 +1073,7 @@ void TimeoutCommand::execute() {
         exit(0);
     }
 
-    //smash->executeCommand(this->command, false, true);
+    smash->executeCommand(this->command, false, true);
 }
 
 void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
