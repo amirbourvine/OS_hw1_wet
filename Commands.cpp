@@ -1055,6 +1055,8 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line, SmallShell* smash) : BuiltI
     _parseCommandLine(cmd, args);
     duration = stoi(args[1]);
 
+    this->command = strdup(cmd_line);
+
    /* //Create a string of the command
     std::string str_command = cmd;
     for(int i = 0; i < 2; ++i)
@@ -1067,10 +1069,7 @@ void TimeoutCommand::execute() {
     /*if(command.compare(""))
         return;*/
 
-    if(alarm(duration)==-1) {
-        perror("smash error: alarm failed");
-        exit(0);
-    }
+    alarm(duration);
 
     smash->executeCommand(this->command, false, true);
 }
