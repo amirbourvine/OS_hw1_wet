@@ -1146,6 +1146,7 @@ void SmallShell::add_timeout(int duration, const char* command){
 }
 
 void SmallShell::set_top_timeout_pid(pid_t pid){
+    cout << "the top timeout pid is set to " << pid << endl;
     this->timeout_list.setTopTimeoutPid(pid);
 }
 
@@ -1172,7 +1173,6 @@ void SmallShell::handleAlarm(){
     cout << "smash: " << this->get_top_timeout_command() << " timed out!" << endl;
 
     //Kill the relevant process
-    cout << this->timeout_list.getTopTimeoutPID() << endl;
     int err = kill(this->timeout_list.getTopTimeoutPID(),SIGKILL);
     if(err == -1){
         perror("smash error: kill failed");
