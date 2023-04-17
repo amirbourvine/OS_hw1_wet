@@ -591,7 +591,7 @@ ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool t
     this->args = new char*[20];
     _parseCommandLine(cmd_s.c_str(), this->args);//without the &
 
-    this->iscomplex = isComplex(cmd_line);
+    this->iscomplex = isComplex(cmd_s.c_str());
 
     if(this->iscomplex){
         this->command = cmd_s.c_str();
@@ -602,7 +602,7 @@ ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool t
 }
 
 void ExternalCommand::execute() {
-    //cout << this->command << endl;
+    cout << this->command << endl;
 
     int num;
 
