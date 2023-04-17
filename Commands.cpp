@@ -1066,14 +1066,13 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line, SmallShell* smash) : BuiltI
 void TimeoutCommand::execute() {
     /*if(command.compare(""))
         return;*/
-
+    cout << this->command << endl;
 
     if(alarm(duration)==-1) {
         perror("smash error: alarm failed");
         exit(0);
     }
 
-    cout << command << endl;
     smash->executeCommand(this->command, false, true);
 }
 
@@ -1197,8 +1196,6 @@ Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
 }
 
 void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd, bool timeout) {
-    cout << strdup(cmd_line) << endl;
-
     Command* cmd = CreateCommand(cmd_line, timeout);
     cmd->execute();
 
