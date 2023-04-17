@@ -618,6 +618,7 @@ void ExternalCommand::execute() {
             }
             else{//father
                 this->smash->add_job(this, pid);
+                this->smash->set_top_timeout_pid(pid);
                 return;
             }
         }
@@ -637,6 +638,8 @@ void ExternalCommand::execute() {
                 waitpid(pid, NULL, WUNTRACED);
                 this->smash->set_foreground_job_pid(-1);
                 this->smash->set_foreground_job_cmd(nullptr);
+
+                this->smash->set_top_timeout_pid(pid);
                 return;
             }
         }
@@ -653,6 +656,8 @@ void ExternalCommand::execute() {
             }
             else{//father
                 this->smash->add_job(this, pid);
+
+                this->smash->set_top_timeout_pid(pid);
                 return;
             }
         }
@@ -671,6 +676,8 @@ void ExternalCommand::execute() {
                 waitpid(pid, NULL, WUNTRACED);
                 this->smash->set_foreground_job_pid(-1);
                 this->smash->set_foreground_job_cmd(nullptr);
+
+                this->smash->set_top_timeout_pid(pid);
                 return;
             }
         }
@@ -1058,6 +1065,10 @@ const time_t timeoutEntriesList::getTopTimeoutInTime() const{
     return this->list[0].in_time;
 }
 
+const pid_t timeoutEntriesList::getTopTimeoutPID() const{
+    return this->list[0].pid;
+}
+
 void timeoutEntriesList::removeTopTimeout(){
     this->list.erase(this->list.begin());
 }
@@ -1161,6 +1172,11 @@ void SmallShell::handleAlarm(){
     cout << "smash: " << this->get_top_timeout_command() << " timed out!" << endl;
 
     //Kill the relevant process
+    int err = kill(this->timeout_list.getTopTimeoutPID(),SIGKILL);
+    if(err == -1){
+        perror("smash error: kill failed");
+        return;
+    }
 
     //Remove the top timeout command
     this->remove_top_timeout();

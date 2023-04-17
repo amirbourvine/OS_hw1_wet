@@ -191,6 +191,7 @@ public:
     void setTopTimeoutPid(pid_t pid);
     const char* getTopTimeoutCommand() const;
     const time_t getTopTimeoutInTime() const;
+    const pid_t getTopTimeoutPID() const;
     void removeTopTimeout();
 };
 
