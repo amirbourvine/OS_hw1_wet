@@ -1172,11 +1172,17 @@ void SmallShell::handleAlarm(){
     cout << "smash: " << this->get_top_timeout_command() << " timed out!" << endl;
 
     //Kill the relevant process
-    int err = kill(this->timeout_list.getTopTimeoutPID(),SIGKILL);
-    if(err == -1){
-        perror("smash error: kill failed");
-        return;
+    if(kill(this->timeout_list.getTopTimeoutPID(), 0) == 0) { //if pid still exists
+        int err = kill(this->timeout_list.getTopTimeoutPID(), SIGKILL);
+        if (err == -1) {
+            perror("smash error: kill failed");
+            return;
+        }
     }
+
+    //if(this->)
+    //smash.set_foreground_job_cmd(nullptr);
+    //smash.set_foreground_job_pid(-1);
 
     //Remove the top timeout command
     this->remove_top_timeout();
