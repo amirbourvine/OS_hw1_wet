@@ -599,11 +599,11 @@ ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool t
     else{
         this->command = cmd_s.substr(0, cmd_s.find_first_of(" \t")).c_str();
     }
+
+    cout << strdup(this->command) << endl;
 }
 
 void ExternalCommand::execute() {
-    cout << this->command << endl;
-
     int num;
 
     if(this->iscomplex){//complex
