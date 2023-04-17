@@ -187,6 +187,7 @@ public:
 public:
     timeoutEntriesList();
     ~timeoutEntriesList() = default;
+    const bool isEmpty() const;
     void addTimeoutEntry(pid_t pid, int duration, const char* command);
     void setTopTimeoutPid(pid_t pid);
     const char* getTopTimeoutCommand() const;

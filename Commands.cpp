@@ -1046,6 +1046,11 @@ timeoutEntriesList::timeoutEntriesList() {
     this->list = std::vector<timeoutEntry>();
 }
 
+const bool timeoutEntriesList::isEmpty() const{
+    return this->list.size() == 0;
+}
+
+
 void timeoutEntriesList::addTimeoutEntry(pid_t pid, int duration, const char* command){
     timeoutEntry temp(pid, duration, command);
 
@@ -1158,6 +1163,9 @@ void SmallShell::remove_top_timeout(){
 }
 
 void SmallShell::setAlarm(){
+    if(this->timeout_list.isEmpty())
+        return;
+
     time_t temp = time(nullptr);
     if(temp == ((time_t) -1)){
         perror("smash error: time failed");
@@ -1168,11 +1176,11 @@ void SmallShell::setAlarm(){
 }
 
 void SmallShell::handleAlarm(){
-    //Print the kill message
-    cout << "smash: " << this->get_top_timeout_command() << " timed out!" << endl;
-
-    //Kill the relevant process
     if(kill(this->timeout_list.getTopTimeoutPID(), 0) == 0) { //if pid still exists
+        //Print the kill message
+        cout << "smash: " << this->get_top_timeout_command() << " timed out!" << endl;
+
+        //Kill the relevant process
         int err = kill(this->timeout_list.getTopTimeoutPID(), SIGKILL);
         if (err == -1) {
             perror("smash error: kill failed");
