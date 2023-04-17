@@ -190,6 +190,7 @@ public:
     void addTimeoutEntry(pid_t pid, int duration, const char* command);
     void setTopTimeoutPid(pid_t pid);
     const char* getTopTimeoutCommand() const;
+    const time_t getTopTimeoutInTime() const;
     void removeTopTimeout();
 };
 
@@ -274,6 +275,7 @@ public:
     void set_top_timeout_pid(pid_t pid);
     const char* get_top_timeout_command() const;
     void remove_top_timeout();
+    void setAlarm();
     void handleAlarm();
 };
 

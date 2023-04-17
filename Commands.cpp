@@ -1054,6 +1054,10 @@ const char* timeoutEntriesList::getTopTimeoutCommand() const{
     return this->list[0].command;
 }
 
+const time_t timeoutEntriesList::getTopTimeoutInTime() const{
+    return this->list[0].in_time;
+}
+
 void timeoutEntriesList::removeTopTimeout(){
     this->list.erase(this->list.begin());
 }
@@ -1077,10 +1081,10 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line, SmallShell* smash) : BuiltI
 }
 
 void TimeoutCommand::execute() {
-    alarm(duration);
-
     //pid will be defined later on in the external command fork
     smash->add_timeout(this->duration, this->command);
+
+    smash->setAlarm();
 
     smash->executeCommand(this->command, false, true);
 }
@@ -1142,16 +1146,27 @@ void SmallShell::remove_top_timeout(){
     this->timeout_list.removeTopTimeout();
 }
 
+void SmallShell::setAlarm(){
+    time_t temp = time(nullptr);
+    if(temp == ((time_t) -1)){
+        perror("smash error: time failed");
+    }
+
+    int duration = this->timeout_list.getTopTimeoutInTime() - temp;
+    alarm(duration);
+}
+
 void SmallShell::handleAlarm(){
     //Print the kill message
     cout << "smash: " << this->get_top_timeout_command() << " timed out!" << endl;
 
     //Kill the relevant process
 
-    //Signal a new alarm
-
     //Remove the top timeout command
     this->remove_top_timeout();
+
+    //Signal a new alarm
+    this->setAlarm();
 }
 
 
