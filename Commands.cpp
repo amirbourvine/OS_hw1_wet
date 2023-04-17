@@ -1172,6 +1172,7 @@ void SmallShell::handleAlarm(){
     cout << "smash: " << this->get_top_timeout_command() << " timed out!" << endl;
 
     //Kill the relevant process
+    cout << this->timeout_list.getTopTimeoutPID() << endl;
     int err = kill(this->timeout_list.getTopTimeoutPID(),SIGKILL);
     if(err == -1){
         perror("smash error: kill failed");
