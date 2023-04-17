@@ -1199,13 +1199,14 @@ Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
     }
 
     //external commands
+    cout << "0-1" << endl;
     return new ExternalCommand(cmd_line, this, timeout);
 }
 
 void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd, bool timeout) {
     // TODO: Add your implementation here
     // for example:
-
+    cout << "0" << endl;
     Command* cmd = CreateCommand(cmd_line, timeout);
     cmd->execute();
 
