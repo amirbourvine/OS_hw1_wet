@@ -1147,7 +1147,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
 
     cout << "0 - 0" << endl;
 
-    _removeBackgroundSign(cmd);//lose &
+    //_removeBackgroundSign(cmd);//lose &
 
     cout << "0 - 1" << endl;
 
