@@ -1144,11 +1144,20 @@ Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
     cout << "0" << endl;
 
     char* cmd = strdup(cmd_line);
-    _removeBackgroundSign(cmd);//lose &
-    string cmd_s = _trim(string(cmd));
-    string firstWord = cmd_s.substr(0, cmd_s.find_first_of(WHITESPACE));
 
     cout << "0 - 0" << endl;
+
+    _removeBackgroundSign(cmd);//lose &
+
+    cout << "0 - 1" << endl;
+
+    string cmd_s = _trim(string(cmd));
+
+    cout << "0 - 2" << endl;
+
+    string firstWord = cmd_s.substr(0, cmd_s.find_first_of(WHITESPACE));
+
+    cout << "0 - 3" << endl;
 
     //special commands
     if(is_IO(cmd_line)){
@@ -1202,7 +1211,7 @@ Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
     }
 
     //external commands
-    cout << "0-1" << endl;
+    cout << "0-5" << endl;
     return new ExternalCommand(cmd_line, this, timeout);
 }
 
