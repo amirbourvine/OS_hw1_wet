@@ -1073,7 +1073,7 @@ void TimeoutCommand::execute() {
         exit(0);
     }
 
-    //smash->executeCommand(this->command, false, true);
+    smash->executeCommand(this->command, false, true);
 }
 
 void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
