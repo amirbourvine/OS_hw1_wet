@@ -633,13 +633,13 @@ void ExternalCommand::execute() {
                 exit(0);
             }
             else{//father
+                this->smash->set_top_timeout_pid(pid);
+
                 this->smash->set_foreground_job_pid(pid);
                 this->smash->set_foreground_job_cmd(this);
                 waitpid(pid, NULL, WUNTRACED);
                 this->smash->set_foreground_job_pid(-1);
                 this->smash->set_foreground_job_cmd(nullptr);
-
-                this->smash->set_top_timeout_pid(pid);
                 return;
             }
         }
@@ -671,13 +671,13 @@ void ExternalCommand::execute() {
                 exit(0);
             }
             else{//father
+                this->smash->set_top_timeout_pid(pid);
+
                 this->smash->set_foreground_job_pid(pid);
                 this->smash->set_foreground_job_cmd(this);
                 waitpid(pid, NULL, WUNTRACED);
                 this->smash->set_foreground_job_pid(-1);
                 this->smash->set_foreground_job_cmd(nullptr);
-
-                this->smash->set_top_timeout_pid(pid);
                 return;
             }
         }
@@ -1146,7 +1146,6 @@ void SmallShell::add_timeout(int duration, const char* command){
 }
 
 void SmallShell::set_top_timeout_pid(pid_t pid){
-    cout << "the top timeout pid is set to " << pid << endl;
     this->timeout_list.setTopTimeoutPid(pid);
 }
 
