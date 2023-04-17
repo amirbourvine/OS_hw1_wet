@@ -1061,7 +1061,6 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line, SmallShell* smash) : BuiltI
         str_command = str_command.substr(str_command.find_first_of(" \t")+1);
 
     command = str_command.c_str();
-    cout << command << endl;
 }
 
 void TimeoutCommand::execute() {
@@ -1074,6 +1073,7 @@ void TimeoutCommand::execute() {
         exit(0);
     }
 
+    cout << command << endl;
     smash->executeCommand(this->command, false, true);
 }
 
@@ -1197,14 +1197,12 @@ Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
 }
 
 void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd, bool timeout) {
-    // TODO: Add your implementation here
-    // for example:
+    cout << strdup(cmd_line) << endl;
+
     Command* cmd = CreateCommand(cmd_line, timeout);
     cmd->execute();
 
     delete cmd;
-
-    // Please note that you must fork smash process for some commands (e.g., external commands....)
 }
 
 BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line) {
