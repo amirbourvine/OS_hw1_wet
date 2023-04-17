@@ -1066,7 +1066,7 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line, SmallShell* smash) : BuiltI
 void TimeoutCommand::execute() {
     /*if(command.compare(""))
         return;*/
-    cout << this->command << endl;
+    cout << strdup(this->command) << endl;
 
     if(alarm(duration)==-1) {
         perror("smash error: alarm failed");
