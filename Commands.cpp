@@ -575,8 +575,6 @@ bool isComplex(const char* cmd_line){
 }
 
 ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool timeout) : Command(cmd_line){
-    cout << "1" << endl;
-
     this->isback = _isBackgroundComamnd(cmd_line);
     this->smash = smash;
 
@@ -585,14 +583,10 @@ ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool t
     _removeBackgroundSign(cmd);//lose &
     string cmd_s = _trim(string(cmd));
 
-    cout << "2" << endl;
-
     if(timeout){
         for(int i = 0; i < 2; ++i)
             cmd_s = cmd_s.substr(cmd_s.find_first_of(" \t")+1);
     }
-
-    cout << "3" << endl;
 
     this->args = new char*[20];
     _parseCommandLine(cmd_s.c_str(), this->args);//without the &
@@ -1067,6 +1061,7 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line, SmallShell* smash) : BuiltI
         str_command = str_command.substr(str_command.find_first_of(" \t")+1);
 
     command = str_command.c_str();
+    cout << command << endl;
 }
 
 void TimeoutCommand::execute() {
@@ -1141,9 +1136,6 @@ SmallShell::~SmallShell() {
 */
 Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
     // For example:
-    cout << "0" << endl;
-    cout << strdup(cmd_line) << endl;
-
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
     string cmd_s = _trim(string(cmd));
