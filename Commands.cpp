@@ -1151,7 +1151,8 @@ void SmallShell::add_timeout(int duration, const char* command){
 }
 
 void SmallShell::set_top_timeout_pid(pid_t pid){
-    this->timeout_list.setTopTimeoutPid(pid);
+    if(!this->timeout_list.isEmpty())
+        this->timeout_list.setTopTimeoutPid(pid);
 }
 
 const char* SmallShell::get_top_timeout_command() const{
@@ -1188,9 +1189,11 @@ void SmallShell::handleAlarm(){
         }
     }
 
-    //if(this->)
-    //smash.set_foreground_job_cmd(nullptr);
-    //smash.set_foreground_job_pid(-1);
+    if(_isBackgroundComamnd(this->foreground_job_cmd->getCmdLine().c_str())){
+        this->set_foreground_job_cmd(nullptr);
+        this->set_foreground_job_pid(-1);
+    }
+
 
     //Remove the top timeout command
     this->remove_top_timeout();
