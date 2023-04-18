@@ -626,10 +626,10 @@ void ExternalCommand::execute() {
             pid_t pid = fork();
             if(pid==0){//son
                 setpgrp();
-                cout << this->command << endl;
+                cout << strdup(this->command) << endl;
 
                 num = execlp("/bin/bash", "/bin/bash", "-c",
-                             this->command, nullptr);
+                             strdup(this->command), nullptr);
                 if(num==-1)
                     perror("smash error: execlp failed");
                 exit(0);
