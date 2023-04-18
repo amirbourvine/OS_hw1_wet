@@ -45,8 +45,6 @@ void ctrlCHandler(int sig_num) {
 }
 
 void alarmHandler(int sig_num) {
-  cout << "smash: got an alarm" << endl;
-
   SmallShell& smash = SmallShell::getInstance();
   smash.handleAlarm();
 }

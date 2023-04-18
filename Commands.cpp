@@ -1179,6 +1179,7 @@ void SmallShell::setAlarm(){
 void SmallShell::handleAlarm(){
     if(kill(this->timeout_list.getTopTimeoutPID(), 0) == 0) { //if pid still exists
         //Print the kill message
+        cout << "smash: got an alarm" << endl;
         cout << "smash: " << this->get_top_timeout_command() << " timed out!" << endl;
 
         //Kill the relevant process
