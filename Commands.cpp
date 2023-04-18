@@ -600,6 +600,8 @@ ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool t
     else{
         this->command = cmd_s.substr(0, cmd_s.find_first_of(" \t")).c_str();
     }
+
+    cout << this->command << endl;
 }
 
 void ExternalCommand::execute() {
