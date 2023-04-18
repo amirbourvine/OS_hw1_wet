@@ -1193,11 +1193,11 @@ void SmallShell::handleAlarm(){
             return;
         }
     }
-/*
+
     if(!_isBackgroundComamnd(this->foreground_job_cmd->getCmdLine().c_str())){
         this->set_foreground_job_cmd(nullptr);
         this->set_foreground_job_pid(-1);
-    }*/
+    }
 
 
     //Remove the top timeout command
