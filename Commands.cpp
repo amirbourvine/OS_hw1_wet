@@ -567,8 +567,8 @@ void KillCommand::execute() {
 
 bool isComplex(const char* cmd_line){
     std::string temp = cmd_line;
-    for(int j = 0; j<(int)temp.size(); j++){
-        if(temp[j] == '?' or temp[j] == '*'){
+    for(int i = 0; i<(int)temp.size(); i++){
+        if(temp[i] == '?' or temp[i] == '*'){
             return true;
         }
     }
@@ -598,8 +598,12 @@ ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool t
     cout << cmd_s << endl;
     cout<<"111"<<endl;
 
-    this->command = strdup(cmd_s.c_str());
-
+    if(this->iscomplex){
+        this->command = strdup(cmd_s.c_str());
+    }
+    else{
+        this->command = strdup(cmd_s.substr(0, cmd_s.find_first_of(" \t")).c_str());
+    }
     cout<<"***"<<endl;
     cout << strdup(this->command) << endl;
     cout<<"***"<<endl;
