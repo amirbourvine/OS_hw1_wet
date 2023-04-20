@@ -13,7 +13,6 @@
 #include <signal.h>
 #include <algorithm>
 #include "Commands.h"
-#define _GNU_SOURCE
 
 using namespace std;
 
