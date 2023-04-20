@@ -594,26 +594,16 @@ ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool t
 
     this->iscomplex = isComplex(cmd_s.c_str());
 
-    cout<<"111"<<endl;
-    cout << cmd_s << endl;
-    cout<<"111"<<endl;
-
     if(this->iscomplex){
         this->command = strdup(cmd_s.c_str());
     }
     else{
         this->command = strdup(cmd_s.substr(0, cmd_s.find_first_of(" \t")).c_str());
     }
-    cout<<"***"<<endl;
-    cout << strdup(this->command) << endl;
-    cout<<"***"<<endl;
 }
 
 void ExternalCommand::execute() {
     int num;
-    cout<<"---"<<endl;
-    cout << strdup(this->command) << endl;
-    cout<<"---"<<endl;
 
     if(this->iscomplex){//complex
         if(this->isback){//back
