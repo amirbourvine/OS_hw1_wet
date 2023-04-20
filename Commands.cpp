@@ -511,7 +511,7 @@ void QuitCommand::execute() {
     if(this->iskill){
         this->list->killAllJobs();
     }
-    exit(1);
+    exit(0);
 }
 
 KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line){
