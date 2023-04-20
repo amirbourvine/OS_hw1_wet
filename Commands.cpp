@@ -594,6 +594,10 @@ ExternalCommand::ExternalCommand(const char *cmd_line, SmallShell* smash, bool t
 
     this->iscomplex = isComplex(cmd_s.c_str());
 
+    cout<<"111"<<endl;
+    cout << cmd_s << endl;
+    cout<<"111"<<endl;
+
     if(this->iscomplex){
         this->command = cmd_s.c_str();
     }
