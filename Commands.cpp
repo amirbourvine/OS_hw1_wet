@@ -1110,8 +1110,8 @@ void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
     this->killFinishedJobs();
     this->jobs_list->addJob(cmd, pid, isStopped);
 }
-void SmallShell::setMsg(const std::string msg) {
-    this->msg = msg;
+void SmallShell::setMsg(const std::string msgg) {
+    this->msg = msgg;
 }
 
 const std::string SmallShell::getMsg() {
