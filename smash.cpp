@@ -14,7 +14,6 @@ int main(int argc, char* argv[]) {
     }
 
     struct sigaction sa;
-    std::cout << "ALL GOOD1" << std::endl;
 
     sa.sa_handler = alarmHandler;
     sigemptyset(&sa.sa_mask);
@@ -23,13 +22,10 @@ int main(int argc, char* argv[]) {
         perror("smash error: failed to set alarm handler");
     }
 
-    std::cout << "ALL GOOD2" << std::endl;
 
     SmallShell& smash = SmallShell::getInstance();
 
-    std::cout << "ALL GOOD3" << std::endl;
     while(true) {
-        std::cout << "ALL GOOD4" << std::endl;
         std::cout << smash.getMsg() <<"> ";
         std::string cmd_line;
         std::getline(std::cin, cmd_line);
