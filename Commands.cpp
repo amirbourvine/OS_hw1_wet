@@ -624,7 +624,7 @@ void ExternalCommand::execute() {
                 exit(0);
             }
             else{//father
-                this->smash->add_job(this, pid);
+                this->smash->add_job(this->getCmdLine(), pid);
                 this->smash->set_top_timeout_pid(pid);
                 return;
             }
@@ -664,7 +664,7 @@ void ExternalCommand::execute() {
                 exit(0);
             }
             else{//father
-                this->smash->add_job(this, pid);
+                this->smash->add_job(this->getCmdLine(), pid);
 
                 this->smash->set_top_timeout_pid(pid);
                 return;
