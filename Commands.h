@@ -154,6 +154,7 @@ public:
     JobEntry *getLastStoppedJob();
     bool exsits(int jobid);
     int maxJobId();
+    void sort();
     // TODO: Add extra methods or modify exisitng ones as needed
 };
 

@@ -337,6 +337,14 @@ void JobsList::removeFinishedJobs() {
     //max job id is updated in removeJobById()
 }
 
+bool compareJob_Entry(JobEntry* j1, JobEntry* j2){
+    return j1->job_id < j2->job_id;
+}
+
+void JobsList::sort() {
+    std::sort(this->list.begin(), this->list.end(), compareJob_Entry);
+}
+
 bool JobsList::exsits(int jobid) {
     for(int i = 0; i<int(this->list.size()); i++){
         if(jobid == this->list[i]->job_id)
@@ -391,6 +399,7 @@ JobsCommand::JobsCommand(const char *cmd_line, JobsList* jobs) : BuiltInCommand(
 
 void JobsCommand::execute() {
     this->jobs->removeFinishedJobs();
+    this->jobs->sort();
     this->jobs->printJobsList();
 }
 
