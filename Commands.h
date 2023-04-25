@@ -93,6 +93,7 @@ public:
 class JobEntry {
     // TODO: Add your data members
 public:
+    Command* cmd;
     int job_id;
     std::string cmd_line;
     pid_t pid;

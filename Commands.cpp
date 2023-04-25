@@ -268,6 +268,7 @@ JobsList::~JobsList(){
 void JobsList::addJob(Command *cmd, pid_t pid, bool isStopped) {
     JobEntry* je = new JobEntry();
     this->max_job_id = this->max_job_id+1;
+    je->cmd = cmd;
     je->job_id = this->max_job_id;
     je->cmd_line = cmd->getCmdLine();
     time_t temp = time(nullptr);
@@ -432,8 +433,9 @@ void ForegroundCommand::execute() {
         return;
     }
     SmallShell& smash = SmallShell::getInstance();
+    JobEntry* jobb = this->list->getJobById(this->job_id);
     smash.set_foreground_job_pid(this->job_pid);
-    smash.set_foreground_job_cmd(this);
+    smash.set_foreground_job_cmd(jobb->cmd);
     this->list->removeJobById(this->job_id);
     waitpid(job->pid, NULL, WUNTRACED);
 }
