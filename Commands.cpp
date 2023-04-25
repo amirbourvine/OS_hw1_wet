@@ -1213,7 +1213,7 @@ SmallShell::SmallShell() {
     this->last_dir = "";
     this->jobs_list = new JobsList();
     this->foreground_job_pid = -1;
-    this->foreground_job_cmd = nullptr;
+    this->foreground_job_cmd = "";
 }
 
 SmallShell::~SmallShell() {
