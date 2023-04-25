@@ -446,6 +446,9 @@ void ForegroundCommand::execute() {
     smash.set_foreground_job_cmd(job->cmd_line);
     this->list->removeJobById(this->job_id);
     waitpid(job->pid, NULL, WUNTRACED);
+    smash.set_foreground_job_cmd("");
+    smash.set_foreground_job_pid(-1);
+    smash.set_foreground_job_id(-1);
 }
 
 BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line){
