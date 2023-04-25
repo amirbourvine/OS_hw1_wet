@@ -430,6 +430,9 @@ void ForegroundCommand::execute() {
     }
     SmallShell& smash = SmallShell::getInstance();
     smash.set_foreground_job_pid(job->pid);
+
+    cout << "FOREGROUND EXE: " << job->cmd->getCmdLine() << endl;
+
     smash.set_foreground_job_cmd(job->cmd);
     this->list->removeJobById(this->job_id);
     waitpid(job->pid, NULL, WUNTRACED);
