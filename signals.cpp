@@ -14,7 +14,7 @@ void ctrlZHandler(int sig_num) {
     else{
         // test
         cout << "pid: " << smash.get_foreground_job_pid()<<endl;
-        cout << smash.get_foreground_job_cmd()->getCmdLine() << endl;
+        cout << (smash.get_foreground_job_cmd()== nullptr) << endl;
         // end test
 
         smash.add_job(smash.get_foreground_job_cmd(), smash.get_foreground_job_pid(), true);
