@@ -566,6 +566,8 @@ KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(
             }
             catch (invalid_argument& e){
                 cerr << "smash error: kill: invalid arguments" << endl;
+                this->exe = false;
+                return;
             }
         }
         try {
@@ -573,6 +575,8 @@ KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(
         }
         catch (invalid_argument& e){
             cerr << "smash error: kill: invalid arguments" << endl;
+            this->exe = false;
+            return;
         }
         if(!jobs->exsits(this->job_id)){
             cerr << "smash error: kill: job-id " << std::to_string(this->job_id) <<" does not exist" << endl;
