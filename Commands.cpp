@@ -273,7 +273,6 @@ void JobsList::addJob(std::string cmd, pid_t pid, int job_id, bool isStopped) {
         je->job_id = this->max_job_id;
     }
     else{
-        this->update_max_id();
         je->job_id = job_id;
     }
 
@@ -290,6 +289,7 @@ void JobsList::addJob(std::string cmd, pid_t pid, int job_id, bool isStopped) {
     je->stopped = isStopped;
 
     this->list.push_back(je);
+    this->update_max_id();
 }
 
 void JobsList::printJobsList() {
