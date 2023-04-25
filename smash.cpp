@@ -13,6 +13,8 @@ int main(int argc, char* argv[]) {
         perror("smash error: failed to set ctrl-C handler");
     }
 
+    std::cout << "ALL GOOD" << std::endl;
+
     struct sigaction sa;
 
     sa.sa_handler = alarmHandler;
