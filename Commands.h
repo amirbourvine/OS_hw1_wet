@@ -144,12 +144,13 @@ public:
 public:
     JobsList();
     ~JobsList();
-    void addJob(std::string cmd, pid_t pid, bool isStopped = false);
+    void addJob(std::string cmd, pid_t pid, int job_id, bool isStopped = false);
     void printJobsList();
     void killAllJobs();
     void removeFinishedJobs();
     JobEntry * getJobById(int jobId);
     void removeJobById(int jobId);
+    void update_max_id();
     JobEntry *getLastStoppedJob();
     bool exsits(int jobid);
     int maxJobId();
@@ -246,6 +247,7 @@ private:
     JobsList* jobs_list;
     pid_t foreground_job_pid;
     std::string foreground_job_cmd;
+    int foregroud_job_id;
     timeoutEntriesList timeout_list;
 
     SmallShell();
@@ -266,12 +268,14 @@ public:
     const std::string getMsg();
     void setLastDir(std::string last_dir);
     const std::string getLastDir();
-    void add_job(std::string cmd, pid_t pid, bool isStopped = false);
+    void add_job(std::string cmd, pid_t pid, int job_id, bool isStopped = false);
     void killFinishedJobs();
     void set_foreground_job_pid(pid_t pid);
     pid_t get_foreground_job_pid();
     void set_foreground_job_cmd(std::string cmd);
     std::string get_foreground_job_cmd();
+    void set_foreground_job_id(int job_id);
+    int get_foreground_job_id();
     int handle3_4(const char* cmd_line, int* std_in, int* std_out, int cmd_num);
     void add_timeout(int duration, const char* command);
     void set_top_timeout_pid(pid_t pid);

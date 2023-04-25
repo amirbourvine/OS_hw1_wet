@@ -265,10 +265,18 @@ JobsList::~JobsList(){
         delete j;
 }
 
-void JobsList::addJob(std::string cmd, pid_t pid, bool isStopped) {
+void JobsList::addJob(std::string cmd, pid_t pid, int job_id, bool isStopped) {
     JobEntry* je = new JobEntry();
-    this->max_job_id = this->max_job_id+1;
-    je->job_id = this->max_job_id;
+
+    if(job_id==-1) {
+        this->max_job_id = this->max_job_id + 1;
+        je->job_id = this->max_job_id;
+    }
+    else{
+        this->update_max_id();
+        je->job_id = job_id;
+    }
+
     je->cmd_line = cmd;
     time_t temp = time(nullptr);
     if(temp == ((time_t) -1)){
@@ -297,6 +305,11 @@ void JobsList::removeJobById(int jobId) {
         }
     }
 
+    //update max job id
+    this->update_max_id();
+}
+
+void JobsList::update_max_id() {
     //update max job id
     this->max_job_id = 0;
     for (int i = 0; i < int(this->list.size()); i++) {
@@ -429,9 +442,7 @@ void ForegroundCommand::execute() {
     }
     SmallShell& smash = SmallShell::getInstance();
     smash.set_foreground_job_pid(job->pid);
-
-    //cout << "FOREGROUND EXE: " << job->cmd->getCmdLine() << endl;
-
+    smash.set_foreground_job_id(this->job_id);
     smash.set_foreground_job_cmd(job->cmd_line);
     this->list->removeJobById(this->job_id);
     waitpid(job->pid, NULL, WUNTRACED);
@@ -624,7 +635,7 @@ void ExternalCommand::execute() {
                 exit(0);
             }
             else{//father
-                this->smash->add_job(this->getCmdLine(), pid);
+                this->smash->add_job(this->getCmdLine(), pid, -1);
                 this->smash->set_top_timeout_pid(pid);
                 return;
             }
@@ -664,7 +675,7 @@ void ExternalCommand::execute() {
                 exit(0);
             }
             else{//father
-                this->smash->add_job(this->getCmdLine(), pid);
+                this->smash->add_job(this->getCmdLine(), pid, -1);
 
                 this->smash->set_top_timeout_pid(pid);
                 return;
@@ -1114,9 +1125,9 @@ void TimeoutCommand::execute() {
     smash->executeCommand(this->command, false, true);
 }
 
-void SmallShell::add_job(std::string cmd, pid_t pid, bool isStopped) {
+void SmallShell::add_job(std::string cmd, pid_t pid, int job_id, bool isStopped) {
     this->killFinishedJobs();
-    this->jobs_list->addJob(cmd, pid, isStopped);
+    this->jobs_list->addJob(cmd, pid, job_id,isStopped);
 }
 void SmallShell::setMsg(const std::string msgg) {
     this->msg = msgg;
@@ -1144,6 +1155,14 @@ void SmallShell::set_foreground_job_cmd(std::string cmd) {
 
 std::string SmallShell::get_foreground_job_cmd() {
     return this->foreground_job_cmd;
+}
+
+int SmallShell::get_foreground_job_id() {
+    return this->foregroud_job_id;
+}
+
+void SmallShell::set_foreground_job_id(int job_id) {
+    this->foregroud_job_id = job_id;
 }
 
 void SmallShell::killFinishedJobs() {
@@ -1213,6 +1232,7 @@ SmallShell::SmallShell() {
     this->last_dir = "";
     this->jobs_list = new JobsList();
     this->foreground_job_pid = -1;
+    this->foregroud_job_id = -1;
     this->foreground_job_cmd = "";
 }
 
