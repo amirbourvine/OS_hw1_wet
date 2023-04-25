@@ -265,12 +265,11 @@ JobsList::~JobsList(){
         delete j;
 }
 
-void JobsList::addJob(Command *cmd, pid_t pid, bool isStopped) {
+void JobsList::addJob(std::string cmd, pid_t pid, bool isStopped) {
     JobEntry* je = new JobEntry();
     this->max_job_id = this->max_job_id+1;
-    je->cmd = cmd;
     je->job_id = this->max_job_id;
-    je->cmd_line = cmd->getCmdLine();
+    je->cmd_line = cmd;
     time_t temp = time(nullptr);
     if(temp == ((time_t) -1)){
         perror("smash error: time failed");
@@ -431,9 +430,9 @@ void ForegroundCommand::execute() {
     SmallShell& smash = SmallShell::getInstance();
     smash.set_foreground_job_pid(job->pid);
 
-    cout << "FOREGROUND EXE: " << job->cmd->getCmdLine() << endl;
+    //cout << "FOREGROUND EXE: " << job->cmd->getCmdLine() << endl;
 
-    smash.set_foreground_job_cmd(job->cmd);
+    smash.set_foreground_job_cmd(job->cmd_line);
     this->list->removeJobById(this->job_id);
     waitpid(job->pid, NULL, WUNTRACED);
 }
@@ -646,10 +645,10 @@ void ExternalCommand::execute() {
                 this->smash->set_top_timeout_pid(pid);
 
                 this->smash->set_foreground_job_pid(pid);
-                this->smash->set_foreground_job_cmd(this);
+                this->smash->set_foreground_job_cmd(this->getCmdLine());
                 waitpid(pid, NULL, WUNTRACED);
                 this->smash->set_foreground_job_pid(-1);
-                this->smash->set_foreground_job_cmd(nullptr);
+                this->smash->set_foreground_job_cmd("");
                 return;
             }
         }
@@ -684,10 +683,10 @@ void ExternalCommand::execute() {
                 this->smash->set_top_timeout_pid(pid);
 
                 this->smash->set_foreground_job_pid(pid);
-                this->smash->set_foreground_job_cmd(this);
+                this->smash->set_foreground_job_cmd(this->getCmdLine());
                 waitpid(pid, NULL, WUNTRACED);
                 this->smash->set_foreground_job_pid(-1);
-                this->smash->set_foreground_job_cmd(nullptr);
+                this->smash->set_foreground_job_cmd("");
                 return;
             }
         }
@@ -1115,7 +1114,7 @@ void TimeoutCommand::execute() {
     smash->executeCommand(this->command, false, true);
 }
 
-void SmallShell::add_job(Command *cmd, pid_t pid, bool isStopped) {
+void SmallShell::add_job(std::string cmd, pid_t pid, bool isStopped) {
     this->killFinishedJobs();
     this->jobs_list->addJob(cmd, pid, isStopped);
 }
@@ -1139,11 +1138,11 @@ pid_t SmallShell::get_foreground_job_pid() {
     return this->foreground_job_pid;
 }
 
-void SmallShell::set_foreground_job_cmd(Command *cmd) {
+void SmallShell::set_foreground_job_cmd(std::string cmd) {
     this->foreground_job_cmd = cmd;
 }
 
-Command *SmallShell::get_foreground_job_cmd() {
+std::string SmallShell::get_foreground_job_cmd() {
     return this->foreground_job_cmd;
 }
 
