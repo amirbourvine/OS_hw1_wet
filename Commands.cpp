@@ -246,9 +246,11 @@ ChangeDirCommand::ChangeDirCommand(const char *cmd_line, SmallShell* smash) : Bu
 
 void ChangeDirCommand::execute() {
     if(this->change) {
-        this->smash->setLastDir(this->last_dir);
         if (chdir((this->curr_dir).c_str()) == -1) {
             perror("smash error: chdir failed");
+        }
+        else{
+            this->smash->setLastDir(this->last_dir);
         }
     }
 }
@@ -1190,12 +1192,6 @@ void SmallShell::handleAlarm(){
             return;
         }
     }
-
-    /*if(!_isBackgroundComamnd(this->foreground_job_cmd->getCmdLine().c_str())){
-        this->set_foreground_job_cmd(nullptr);
-        this->set_foreground_job_pid(-1);
-    }*/
-
 
     //Remove the top timeout command
     this->remove_top_timeout();
