@@ -325,6 +325,7 @@ class ForegroundCommand : public BuiltInCommand {
     // TODO: Add your data members
     JobsList* list;
     int job_id;
+    pid_t job_pid;
     bool exe;
 public:
     ForegroundCommand(const char* cmd_line, JobsList* jobs);

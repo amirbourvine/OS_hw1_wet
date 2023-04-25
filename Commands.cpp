@@ -395,6 +395,8 @@ ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : Bui
         }
         else{
             this->job_id = jobs->maxJobId();
+            JobEntry* job = jobs->getJobById(this->job_id);
+            this->job_pid = job->pid;
         }
         return;
     }
@@ -402,6 +404,8 @@ ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : Bui
         int jobid = stoi(args[1]);
         if(jobs->exsits(jobid)){
             this->job_id = jobid;
+            JobEntry* job = jobs->getJobById(this->job_id);
+            this->job_pid = job->pid;
         }
         else{
             std::string str = "smash error: fg: job-id ";
@@ -427,6 +431,9 @@ void ForegroundCommand::execute() {
         perror("smash error: kill failed");
         return;
     }
+    SmallShell& smash = SmallShell::getInstance();
+    smash.set_foreground_job_pid(this->job_pid);
+    smash.set_foreground_job_cmd(this);
     this->list->removeJobById(this->job_id);
     waitpid(job->pid, NULL, WUNTRACED);
 }
