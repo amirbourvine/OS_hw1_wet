@@ -26,7 +26,10 @@ int main(int argc, char* argv[]) {
     std::cout << "ALL GOOD2" << std::endl;
 
     SmallShell& smash = SmallShell::getInstance();
+
+    std::cout << "ALL GOOD3" << std::endl;
     while(true) {
+        std::cout << "ALL GOOD4" << std::endl;
         std::cout << smash.getMsg() <<"> ";
         std::string cmd_line;
         std::getline(std::cin, cmd_line);
