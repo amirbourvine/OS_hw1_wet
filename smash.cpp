@@ -13,9 +13,8 @@ int main(int argc, char* argv[]) {
         perror("smash error: failed to set ctrl-C handler");
     }
 
-    std::cout << "ALL GOOD" << std::endl;
-
     struct sigaction sa;
+    std::cout << "ALL GOOD1" << std::endl;
 
     sa.sa_handler = alarmHandler;
     sigemptyset(&sa.sa_mask);
@@ -23,6 +22,8 @@ int main(int argc, char* argv[]) {
     if (sigaction(SIGALRM, &sa, NULL) == -1) {
         perror("smash error: failed to set alarm handler");
     }
+
+    std::cout << "ALL GOOD2" << std::endl;
 
     SmallShell& smash = SmallShell::getInstance();
     while(true) {
