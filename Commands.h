@@ -45,8 +45,6 @@ public:
     PipeCommand(const char* cmd_line);
     virtual ~PipeCommand() {}
     void execute() override;
-    void handle_without_fork();
-    void handle_with_fork();
     bool is3();
     bool is4();
 

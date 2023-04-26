@@ -931,7 +931,7 @@ void PipeCommand::handle_without_fork(){
 
 }
 
-void PipeCommand::handle_with_fork(){
+void PipeCommand::execute(){
     if(!this->exe) {
         return;
     }
@@ -991,11 +991,6 @@ void PipeCommand::handle_with_fork(){
     }
 
     waitpid(pid, NULL, WUNTRACED);
-}
-
-void PipeCommand::execute() {
-    if(this->second_cmd)
-
 }
 
 SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : BuiltInCommand(cmd_line){
