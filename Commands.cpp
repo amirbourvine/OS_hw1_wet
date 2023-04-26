@@ -783,7 +783,7 @@ int RedirectionCommand::handle1_2(const char *cmd_line, int cmd_num) {
         err = open(temp, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXO | S_IRWXG | S_IRWXU);
     }
     if(cmd_num == 2) {
-        err = open(temp, O_WRONLY | O_CREAT | O_APPEND | O_TRUNC, S_IRWXO | S_IRWXG | S_IRWXU);
+        err = open(temp, O_WRONLY | O_CREAT | O_APPEND, S_IRWXO | S_IRWXG | S_IRWXU);
     }
 
     if(err == -1) {
