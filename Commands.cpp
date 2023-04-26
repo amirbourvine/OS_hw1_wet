@@ -184,7 +184,8 @@ void chpromptCommand::execute() {
 ShowPidCommand::ShowPidCommand(const char *cmd_line) : BuiltInCommand(cmd_line){}
 
 void ShowPidCommand::execute() {
-    cout << "smash pid is " << getpid()<<endl;
+    SmallShell& smash = SmallShell::getInstance();
+    cout << "smash pid is " << smash.get_pid() <<endl;
 }
 
 GetCurrDirCommand::GetCurrDirCommand(const char *cmd_line) : BuiltInCommand(cmd_line) {}
@@ -926,7 +927,11 @@ PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line){
     }
 }
 
-void PipeCommand::execute() {
+void PipeCommand::handle_without_fork(){
+
+}
+
+void PipeCommand::handle_with_fork(){
     if(!this->exe) {
         return;
     }
@@ -986,6 +991,10 @@ void PipeCommand::execute() {
     }
 
     waitpid(pid, NULL, WUNTRACED);
+}
+
+void PipeCommand::execute() {
+    if(this->second_cmd)
 
 }
 
@@ -1204,6 +1213,10 @@ const std::string SmallShell::getLastDir() {
     return this->last_dir;
 }
 
+int SmallShell::get_pid() {
+    return this->pid;
+}
+
 void SmallShell::set_foreground_job_pid(pid_t pid) {
     this->foreground_job_pid = pid;
 }
@@ -1297,6 +1310,7 @@ SmallShell::SmallShell() {
     this->foreground_job_pid = -1;
     this->foregroud_job_id = -1;
     this->foreground_job_cmd = "";
+    this->pid = getpid();
 }
 
 SmallShell::~SmallShell() {
@@ -1367,6 +1381,8 @@ Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
     //external commands
     return new ExternalCommand(cmd_line, this, timeout);
 }
+
+
 
 void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd, bool timeout) {
     Command* cmd = CreateCommand(cmd_line, timeout);

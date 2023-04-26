@@ -45,6 +45,8 @@ public:
     PipeCommand(const char* cmd_line);
     virtual ~PipeCommand() {}
     void execute() override;
+    void handle_without_fork();
+    void handle_with_fork();
     bool is3();
     bool is4();
 
@@ -250,6 +252,7 @@ private:
     std::string foreground_job_cmd;
     int foregroud_job_id;
     timeoutEntriesList timeout_list;
+    int pid;
 
     SmallShell();
 public:
@@ -284,6 +287,7 @@ public:
     void remove_top_timeout();
     void setAlarm();
     void handleAlarm();
+    int get_pid();
 };
 
 class chpromptCommand : public BuiltInCommand {
