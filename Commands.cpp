@@ -88,17 +88,17 @@ void _removeBackgroundSign(char* cmd_line) {
 int is_IO_Pipe(const char *cmd_line){
     //return 0 if not, 1 for >, 2 for >>, 3 for |, 4 for |&
     std::string str = cmd_line;
-    if(str.find(">") != std::string::npos){
-        return 1;
-    }
     if(str.find(">>") != std::string::npos){
         return 2;
     }
-    if(str.find("|") != std::string::npos){
-        return 3;
+    if(str.find(">") != std::string::npos){
+        return 1;
     }
     if(str.find("|&") != std::string::npos){
         return 4;
+    }
+    if(str.find("|") != std::string::npos){
+        return 3;
     }
     return 0;
 }
