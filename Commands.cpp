@@ -726,13 +726,10 @@ void ExternalCommand::execute() {
 
 RedirectionCommand::RedirectionCommand(const char *cmd_line) : Command(cmd_line){
     this->std_out = -1;
-    this->exe = true;
+    this->exe = 1;
     this->initial_cmd_line = cmd_line;
 
-    int err = this->handle_IO_Command_Before(cmd_line);
-    if(err == -1){
-        this->exe = false;
-    }
+    this->handle_IO_Command_Before(cmd_line);
 }
 
 
@@ -740,6 +737,7 @@ int RedirectionCommand::handle1_2(const char *cmd_line, int cmd_num) {
     this->std_out =  dup(1);
     if(this->std_out == -1) {
         perror("smash error: dup failed");
+        this->exe = 0;
         return -1;
     }
 
@@ -776,19 +774,25 @@ int RedirectionCommand::handle1_2(const char *cmd_line, int cmd_num) {
     int err = close(1);
     if(err == -1) {
         perror("smash error: close failed");
+        this->exe = -1;
         return -1;
     }
     const char* temp = args[index];
     if(cmd_num == 1) {
         err = open(temp, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXO | S_IRWXG | S_IRWXU);
+        if(err == -1) {
+            perror("smash error: open failed");
+            this->exe = -2;
+            return -1;
+        }
     }
     if(cmd_num == 2) {
         err = open(temp, O_WRONLY | O_CREAT | O_APPEND, S_IRWXO | S_IRWXG | S_IRWXU);
-    }
-
-    if(err == -1) {
-        perror("smash error: open failed");
-        return -1;
+        if(err == -1) {
+            perror("smash error: open failed");
+            this->exe = -2;
+            return -1;
+        }
     }
     return 1;
 }
@@ -805,7 +809,7 @@ char *RedirectionCommand::handle_IO_Built_in_Simple(char *final_cmd, int cmd_num
     return final_cmd;
 }
 
-int RedirectionCommand::handle_IO_Command_Before(const char *cmd_line) {
+void RedirectionCommand::handle_IO_Command_Before(const char *cmd_line) {
     char* final_cmd = strdup(cmd_line);
 
     if(is_IO_Pipe(final_cmd) > 0){
@@ -815,7 +819,7 @@ int RedirectionCommand::handle_IO_Command_Before(const char *cmd_line) {
     if(is_IO_Pipe(final_cmd)==1){
         int err = this->handle1_2(final_cmd, 1);
         if(err == -1){
-            return -1;
+            return;
         }
         //change cmd_line for external simple
         //has to come after handle cause handle needs the file to change stdout into
@@ -825,7 +829,7 @@ int RedirectionCommand::handle_IO_Command_Before(const char *cmd_line) {
     if(is_IO_Pipe(final_cmd)==2){
         int err = this->handle1_2(final_cmd, 2);
         if(err == -1){
-            return -1;
+            return;
         }
         //change cmd_line for external simple
         //has to come after handle cause handle needs the file to change stdout into
@@ -833,33 +837,59 @@ int RedirectionCommand::handle_IO_Command_Before(const char *cmd_line) {
     }
 
     this->setCmdLine(final_cmd);
-    return 1;
 }
 
 int RedirectionCommand::handle_IO_Command_After(const char *cmd_line) {
     if(is_IO_Pipe(cmd_line)==1 or is_IO_Pipe(cmd_line)==2){
-        //retrieve std_out
-        int err = close(1);
-        if(err == -1) {
-            perror("smash error: close failed");
-            return -1;
+        int err;
+        if(this->exe == 0){
+            return 1;
         }
-        err = dup2(this->std_out, 1);
-        if(err == -1) {
-            perror("smash error: dup2 failed");
-            return -1;
+        if(this->exe == 1){
+            err = close(1);
+            if(err == -1) {
+                perror("smash error: close failed");
+                return -1;
+            }
+            err = dup2(this->std_out, 1);
+            if(err == -1) {
+                perror("smash error: dup2 failed");
+                return -1;
+            }
+            err = close(this->std_out);
+            if(err == -1) {
+                perror("smash error: close failed");
+                return -1;
+            }
+            return 1;
         }
-        err = close(this->std_out);
-        if(err == -1) {
-            perror("smash error: close failed");
-            return -1;
+        if(this->exe == -1){
+            err = close(this->std_out);
+            if(err == -1) {
+                perror("smash error: close failed");
+                return -1;
+            }
+            return 1;
+        }
+        if(this->exe == -2){
+            err = dup2(this->std_out, 1);
+            if(err == -1) {
+                perror("smash error: dup2 failed");
+                return -1;
+            }
+            err = close(this->std_out);
+            if(err == -1) {
+                perror("smash error: close failed");
+                return -1;
+            }
+            return 1;
         }
     }
     return 1;
 }
 
 void RedirectionCommand::execute() {
-    if(this->exe) {
+    if(this->exe == 1) {
         SmallShell &smash = SmallShell::getInstance();
         smash.executeCommand(this->getCmdLine().c_str(), false);
     }
