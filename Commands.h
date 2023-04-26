@@ -54,13 +54,13 @@ class RedirectionCommand : public Command {
     // TODO: Add your data members
     int std_out;
     const char* initial_cmd_line;
-    bool exe;
+    int exe;
 public:
     explicit RedirectionCommand(const char* cmd_line);
     virtual ~RedirectionCommand() {}
     void execute() override;
     int handle1_2(const char* cmd_line, int cmd_num);
-    int handle_IO_Command_Before(const char* cmd_line);
+    void handle_IO_Command_Before(const char* cmd_line);
     char* handle_IO_Built_in_Simple(char* final_cmd, int cmd_num);
     int handle_IO_Command_After(const char* final_cmd);
 };
