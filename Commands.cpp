@@ -780,10 +780,10 @@ int RedirectionCommand::handle1_2(const char *cmd_line, int cmd_num) {
     }
     const char* temp = args[index];
     if(cmd_num == 1) {
-        err = open(temp, O_WRONLY | O_CREAT, S_IRWXO | S_IRWXG | S_IRWXU | O_TRUNC);
+        err = open(temp, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXO | S_IRWXG | S_IRWXU);
     }
     if(cmd_num == 2) {
-        err = open(temp, O_WRONLY | O_CREAT | O_APPEND, S_IRWXO | S_IRWXG | S_IRWXU | O_TRUNC);
+        err = open(temp, O_WRONLY | O_CREAT | O_APPEND | O_TRUNC, S_IRWXO | S_IRWXG | S_IRWXU);
     }
 
     if(err == -1) {
