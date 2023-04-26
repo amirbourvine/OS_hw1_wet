@@ -87,24 +87,18 @@ void _removeBackgroundSign(char* cmd_line) {
 
 int is_IO_Pipe(const char *cmd_line){
     //return 0 if not, 1 for >, 2 for >>, 3 for |, 4 for |&
-    char* args[20];
-    char* cmd = strdup(cmd_line);
-    int num = _parseCommandLine(cmd, args);
-    std::string str;
-    for(int i = 0; i<num; i++){
-        str = args[i];
-        if(str.compare(">")==0){
-            return 1;
-        }
-        if(str.compare(">>")==0){
-            return 2;
-        }
-        if(str.compare("|")==0){
-            return 3;
-        }
-        if(str.compare("|&")==0){
-            return 4;
-        }
+    std::string str = cmd_line;
+    if(str.find(">") != std::string::npos){
+        return 1;
+    }
+    if(str.find(">>") != std::string::npos){
+        return 2;
+    }
+    if(str.find("|") != std::string::npos){
+        return 3;
+    }
+    if(str.find("|&") != std::string::npos){
+        return 4;
     }
     return 0;
 }
@@ -749,12 +743,25 @@ int RedirectionCommand::handle1_2(const char *cmd_line, int cmd_num) {
         return -1;
     }
 
+    //add space before > or >> anyway
+    std::string str = cmd_line;
+    int index = -1;
+    std::string cmd_line_changed;
+    if(cmd_num==1) {
+        index = str.find(">");
+        cmd_line_changed = str.substr(0, index) + " > " + str.substr(index+1, str.size()-index-1);
+    }
+    if(cmd_num==2) {
+        index = str.find(">>");
+        cmd_line_changed = str.substr(0, index) + " >> " + str.substr(index+2, str.size()-index-2);
+    }
+
+
     char* args[20];
-    char* cmd = strdup(cmd_line);
+    char* cmd = strdup(cmd_line_changed.c_str());
     _removeBackgroundSign(cmd);
     int num = _parseCommandLine(cmd, args);
-    std::string str;
-    int index = -1;
+    index = -1;
     for(int i = 0; i<num; i++){
         str = args[i];
 
