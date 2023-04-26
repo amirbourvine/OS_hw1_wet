@@ -927,10 +927,6 @@ PipeCommand::PipeCommand(const char *cmd_line) : Command(cmd_line){
     }
 }
 
-void PipeCommand::handle_without_fork(){
-
-}
-
 void PipeCommand::execute(){
     if(!this->exe) {
         return;
