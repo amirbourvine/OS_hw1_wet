@@ -1294,8 +1294,7 @@ void SmallShell::setAlarm(){
 void SmallShell::handleAlarm(){
     cout << "smash: got an alarm" << endl;
 
-    SmallShell& smash = SmallShell::getInstance();
-    smash.killFinishedJobs();
+    this->killFinishedJobs();
 
     if(kill(this->timeout_list.getTopTimeoutPID(), 0) == 0) { //if pid still exists
         //Print the kill message
