@@ -1147,7 +1147,14 @@ void timeoutEntriesList::addTimeoutEntry(pid_t pid, int duration, const char* co
 }
 
 void timeoutEntriesList::setTopTimeoutPid(pid_t pid){
-    this->list[0].pid = pid;
+    for(auto t : this->list){
+        if(t.pid == 0){
+            t.pid = pid;
+            return;
+        }
+    }
+
+    perror("setTopTimeoutPid failed");
 }
 
 const char* timeoutEntriesList::getTopTimeoutCommand() const{
