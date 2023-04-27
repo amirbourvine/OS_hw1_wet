@@ -1318,11 +1318,13 @@ SmallShell::~SmallShell() {
 */
 Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
     // For example:
+    cout << "HERE" << endl;
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
     string cmd_s = _trim(string(cmd));
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(WHITESPACE));
 
+    cout << "HERE1" << endl;
     //special commands
     if(is_IO(cmd_line)){
         return new RedirectionCommand(cmd_line);
@@ -1331,6 +1333,8 @@ Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
     if(is_PIPE(cmd_line)){
         return new PipeCommand(cmd_line);
     }
+
+    cout << "HERE2" << endl;
 
     //built-in commands
 
