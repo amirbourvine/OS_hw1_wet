@@ -1154,6 +1154,9 @@ void timeoutEntriesList::setTopTimeoutPid(pid_t pid){
         }
     }
 
+    for(auto t : this->list)
+        cout << t.pid << " " << t.command << endl;
+
     perror("setTopTimeoutPid failed");
 }
 
