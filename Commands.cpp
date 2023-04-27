@@ -564,6 +564,11 @@ KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(
                 this->exe = false;
                 return;
             }
+            if(this->sig_num<0 or this->sig_num>31){
+                cerr << "smash error: kill: invalid arguments" << endl;
+                this->exe = false;
+                return;
+            }
         }
         try {
             this->job_id = stoi(args[2]);
