@@ -1376,7 +1376,8 @@ Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
 
     //special case
     std::string temp = cmd;
-    if(temp.compare("\n")==0){
+    string temp2 = _trim(cmd);
+    if(temp.compare("")==0){
         return nullptr;
     }
 
