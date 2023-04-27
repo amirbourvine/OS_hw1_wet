@@ -1318,13 +1318,19 @@ SmallShell::~SmallShell() {
 */
 Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
     // For example:
-    cout << "HERE" << endl;
     char* cmd = strdup(cmd_line);
+
+    //special case
+    std::string temp = cmd;
+    string temp2 = _trim(cmd);
+    if(temp.compare("")==0){
+        return nullptr;
+    }
+
     _removeBackgroundSign(cmd);//lose &
     string cmd_s = _trim(string(cmd));
     string firstWord = cmd_s.substr(0, cmd_s.find_first_of(WHITESPACE));
 
-    cout << "HERE1" << endl;
     //special commands
     if(is_IO(cmd_line)){
         return new RedirectionCommand(cmd_line);
@@ -1334,7 +1340,6 @@ Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
         return new PipeCommand(cmd_line);
     }
 
-    cout << "HERE2" << endl;
 
     //built-in commands
 
@@ -1376,13 +1381,6 @@ Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
     }
     if (firstWord.compare("timeout") == 0 && !timeout) {
         return new TimeoutCommand(cmd_line, this);
-    }
-
-    //special case
-    std::string temp = cmd;
-    string temp2 = _trim(cmd);
-    if(temp.compare("")==0){
-        return nullptr;
     }
 
     //external commands
