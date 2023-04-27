@@ -793,7 +793,7 @@ int RedirectionCommand::handle1_2(const char *cmd_line, int cmd_num) {
     }
     const char* temp = args[index];
     if(cmd_num == 1) {
-        err = open(temp, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXO | S_IRWXG | S_IRWXU);
+        err = open(temp, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
         if(err == -1) {
             perror("smash error: open failed");
             this->exe = -2;
@@ -801,7 +801,7 @@ int RedirectionCommand::handle1_2(const char *cmd_line, int cmd_num) {
         }
     }
     if(cmd_num == 2) {
-        err = open(temp, O_WRONLY | O_CREAT | O_APPEND, S_IRWXO | S_IRWXG | S_IRWXU);
+        err = open(temp, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
         if(err == -1) {
             perror("smash error: open failed");
             this->exe = -2;
