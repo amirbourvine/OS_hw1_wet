@@ -1155,6 +1155,8 @@ void timeoutEntriesList::addTimeoutEntry(pid_t pid, int duration, const char* co
 }
 
 void timeoutEntriesList::setTopTimeoutPid(pid_t pid){
+    cout << "received pid: " << pid << endl;
+
     for(auto t : this->list){
         if(t.pid == 0){
             t.pid = pid;
