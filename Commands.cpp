@@ -1374,6 +1374,12 @@ Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
         return new TimeoutCommand(cmd_line, this);
     }
 
+    //special case
+    std::string temp = cmd;
+    if(temp.compare("\n")==0){
+        return nullptr;
+    }
+
     //external commands
     return new ExternalCommand(cmd_line, this, timeout);
 }
@@ -1382,9 +1388,11 @@ Command * SmallShell::CreateCommand(const char* cmd_line, bool timeout) {
 
 void SmallShell::executeCommand(const char *cmd_line, bool is_pipe_second_cmd, bool timeout) {
     Command* cmd = CreateCommand(cmd_line, timeout);
-    cmd->execute();
 
-    delete cmd;
+    if(cmd!= nullptr) {
+        cmd->execute();
+        delete cmd;
+    }
 }
 
 BuiltInCommand::BuiltInCommand(const char *cmd_line) : Command(cmd_line) {
