@@ -1155,9 +1155,6 @@ void timeoutEntriesList::addTimeoutEntry(pid_t pid, int duration, const char* co
 }
 
 void timeoutEntriesList::setTopTimeoutPid(pid_t pid){
-    for(auto t : this->list)
-        cout << t.pid << " " << t.command << endl;
-
     for(auto t : this->list){
         if(t.pid == 0){
             t.pid = pid;
@@ -1297,6 +1294,9 @@ void SmallShell::setAlarm(){
 void SmallShell::handleAlarm(){
     cout << "smash: got an alarm" << endl;
     if(kill(this->timeout_list.getTopTimeoutPID(), 0) == 0) { //if pid still exists
+
+        cout << this->timeout_list.getTopTimeoutPID() << endl;
+
         //Print the kill message
         cout << "smash: " << this->get_top_timeout_command() << " timed out!" << endl;
 
