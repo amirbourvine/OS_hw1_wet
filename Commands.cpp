@@ -1161,8 +1161,6 @@ void timeoutEntriesList::setTopTimeoutPid(pid_t pid){
             return;
         }
     }
-
-    perror("setTopTimeoutPid failed");
 }
 
 const char* timeoutEntriesList::getTopTimeoutCommand() const{
