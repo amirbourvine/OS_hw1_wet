@@ -1160,7 +1160,7 @@ void timeoutEntriesList::setTopTimeoutPid(pid_t pid){
             t.pid = pid;
 
             for(auto j : this->list)
-                cout << j.pid << " " << j.command << endl;s
+                cout << j.pid << " " << j.command << endl;
 
             return;
         }
