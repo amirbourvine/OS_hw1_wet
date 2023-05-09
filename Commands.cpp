@@ -418,7 +418,7 @@ ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : Bui
         }
         return;
     }
-    if(num == 2){
+    if(num >= 2){
         int jobid;
         try {
             jobid = stoi(args[1]);
@@ -436,6 +436,10 @@ ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : Bui
             str += args[1];
             str += " does not exist";
             cerr << str << endl;
+            this->exe = false;
+        }
+        if(num != 2){
+            cerr << "smash error: fg: invalid arguments" << endl;
             this->exe = false;
         }
         return;
