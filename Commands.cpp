@@ -234,6 +234,9 @@ ChangeDirCommand::ChangeDirCommand(const char *cmd_line, SmallShell* smash) : Bu
             return;
         }
     }
+    if(num == 1){
+        this->change = false;
+    }
     if(num>2){
         cerr << "smash error: cd: too many arguments"<<endl;
     }
@@ -421,7 +424,10 @@ ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : Bui
             jobid = stoi(args[1]);
         }
         catch (invalid_argument& e){
-            cerr << "smash error: fg: invalid arguments" << endl;
+            std::string str = "smash error: fg: job-id ";
+            str += args[1];
+            str += " does not exist";
+            cerr << str << endl;
             this->exe = false;
             return;
         }
@@ -487,7 +493,10 @@ BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : Bui
             jobid = stoi(args[1]);
         }
         catch (invalid_argument& e){
-            cerr << "smash error: bg: invalid arguments" << endl;
+            std::string str = "smash error: bg: job-id ";
+            str += args[1];
+            str += " does not exist";
+            cerr << str << endl;
             this->exe = false;
             return;
         }
@@ -563,7 +572,20 @@ KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
     int num = _parseCommandLine(cmd, args);
-    if(num == 3){
+    if(num >= 3){
+        try {
+            this->job_id = stoi(args[2]);
+        }
+        catch (invalid_argument& e){
+            cerr << "smash error: kill: job-id " << args[2] <<" does not exist" << endl;
+            this->exe = false;
+            return;
+        }
+        if(!jobs->exsits(this->job_id)){
+            cerr << "smash error: kill: job-id " << std::to_string(this->job_id) <<" does not exist" << endl;
+            this->exe = false;
+            return;
+        }
         std::string str = args[1];
         if(str[0] != '-'){
             cerr << "smash error: kill: invalid arguments" << endl;
@@ -580,27 +602,9 @@ KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(
                 this->exe = false;
                 return;
             }
-            if(this->sig_num<0 or this->sig_num>31){
-                cerr << "smash error: kill: invalid arguments" << endl;
-                this->exe = false;
-                return;
-            }
-        }
-        try {
-            this->job_id = stoi(args[2]);
-        }
-        catch (invalid_argument& e){
-            cerr << "smash error: kill: invalid arguments" << endl;
-            this->exe = false;
-            return;
-        }
-        if(!jobs->exsits(this->job_id)){
-            cerr << "smash error: kill: job-id " << std::to_string(this->job_id) <<" does not exist" << endl;
-            this->exe = false;
-            return;
         }
     }
-    else{
+    if(num!=3){
         cerr << "smash error: kill: invalid arguments" << endl;
         this->exe = false;
     }
@@ -1017,12 +1021,12 @@ SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : BuiltInCo
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
     int num = _parseCommandLine(cmd, args);
-    if(num == 3){
+    if(num >= 3){
         try {
             this->job_id = stoi(args[1]);
         }
         catch (invalid_argument& e){
-            cerr << "smash error: setcore: invalid arguments" << endl;
+            cerr << "smash error: setcore: job-id " << args[1] <<" does not exist" << endl;
             this->exe = false;
             return;
         }
@@ -1035,7 +1039,7 @@ SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : BuiltInCo
             this->core_num = stoi(args[2]);
         }
         catch (invalid_argument& e){
-            cerr << "smash error: setcore: invalid arguments" << endl;
+            cerr << "smash error: setcore: invalid core number" << endl;
             this->exe = false;
             return;
         }
@@ -1045,11 +1049,12 @@ SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : BuiltInCo
             return;
         }
     }
-    else{
+    if(num!=3){
         cerr << "smash error: setcore: invalid arguments" << endl;
         this->exe = false;
     }
 }
+
 void SetcoreCommand::execute() {
     if(this->exe == false){
         return;
@@ -1075,7 +1080,7 @@ GetFileTypeCommand::GetFileTypeCommand(const char* cmd_line) : BuiltInCommand(cm
         path_to_file = args[1];
     }
     else{
-        cerr << "smash error: gettype: invalid arguments" << endl;
+        cerr << "smash error: getfiletype: invalid arguments" << endl;
         this->exe = false;
     }
 }
