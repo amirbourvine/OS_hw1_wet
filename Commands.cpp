@@ -1039,7 +1039,7 @@ SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : BuiltInCo
             this->exe = false;
             return;
         }
-        if(this->core_num < 0 || this->core_num >= get_nprocs_conf()()){
+        if(this->core_num < 0 || this->core_num >= get_nprocs_conf()){
             cerr << "smash error: setcore: invalid core number" << endl;
             this->exe = false;
             return;
