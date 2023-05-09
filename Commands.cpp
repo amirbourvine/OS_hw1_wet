@@ -1021,7 +1021,7 @@ SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : BuiltInCo
     char* cmd = strdup(cmd_line);
     _removeBackgroundSign(cmd);//lose &
     int num = _parseCommandLine(cmd, args);
-    if(num >= 3){
+    if(num>=2){
         try {
             this->job_id = stoi(args[1]);
         }
@@ -1035,6 +1035,8 @@ SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : BuiltInCo
             this->exe = false;
             return;
         }
+    }
+    if(num >= 3){
         try {
             this->core_num = stoi(args[2]);
         }
