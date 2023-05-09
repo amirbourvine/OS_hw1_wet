@@ -1092,9 +1092,6 @@ void GetFileTypeCommand::execute() {
     }
 
     switch (buf.st_mode & S_IFMT) {
-        case S_IFREG:
-            file_type = "regular file";
-            break;
         case S_IFDIR:
             file_type = "directory";
             break;
@@ -1112,6 +1109,9 @@ void GetFileTypeCommand::execute() {
             break;
         case S_IFSOCK:
             file_type = "socket";
+            break;
+        case S_IFREG:
+            file_type = "regular file";
             break;
         default:
             printf("unknown\n");
