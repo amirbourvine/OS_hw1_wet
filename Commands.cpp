@@ -1134,7 +1134,7 @@ ChmodCommand::ChmodCommand(const char *cmd_line) : BuiltInCommand(cmd_line){
     int num = _parseCommandLine(cmd, args);
     if(num == 3){
         try {
-            mode = stoi(args[1]);
+            mode = stoi(args[1],0 ,8);
         }
         catch (invalid_argument& e){
             cerr << "smash error: chmod: invalid arguments" << endl;
