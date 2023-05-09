@@ -1086,7 +1086,7 @@ void GetFileTypeCommand::execute() {
     struct stat buf;
     std::string file_type;
 
-    if (stat(path_to_file, &buf) == -1) {
+    if (lstat(path_to_file, &buf) == -1) {
         perror("smash error: stat failed");;
         return;
     }
