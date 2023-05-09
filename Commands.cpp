@@ -1127,7 +1127,7 @@ void GetFileTypeCommand::execute() {
 
     int file_size = buf.st_size;
 
-    cout << path_to_file << "'s type is " << file_type << " and take up "
+    cout << path_to_file << "'s type is \"" << file_type << "\" and take up "
         << file_size << " bytes" << endl;
 }
 
