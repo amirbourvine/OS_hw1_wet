@@ -1039,6 +1039,11 @@ SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : BuiltInCo
             this->exe = false;
             return;
         }
+        if(this->core_num < 0 || this->core_num >= get_nprocs_conf()()){
+            cerr << "smash error: setcore: invalid core number" << endl;
+            this->exe = false;
+            return;
+        }
     }
     else{
         cerr << "smash error: setcore: invalid arguments" << endl;
@@ -1055,10 +1060,7 @@ void SetcoreCommand::execute() {
     CPU_ZERO(&cpuset);
     CPU_SET(core_num, &cpuset);
     if(sched_setaffinity(job->pid, sizeof(cpu_set_t), &cpuset) == -1){
-        if(errno == EINVAL)
-            cerr << "smash error: setcore: invalid core number" << endl;
-        else
-            perror("smash error: sched_setaffinity failed");
+        perror("smash error: sched_setaffinity failed");
         return;
     }
 }
