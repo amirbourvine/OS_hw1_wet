@@ -424,10 +424,7 @@ ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : Bui
             jobid = stoi(args[1]);
         }
         catch (invalid_argument& e){
-            std::string str = "smash error: fg: job-id ";
-            str += args[1];
-            str += " does not exist";
-            cerr << str << endl;
+            cerr << "smash error: fg: invalid arguments" << endl;
             this->exe = false;
             return;
         }
@@ -493,10 +490,7 @@ BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : Bui
             jobid = stoi(args[1]);
         }
         catch (invalid_argument& e){
-            std::string str = "smash error: bg: job-id ";
-            str += args[1];
-            str += " does not exist";
-            cerr << str << endl;
+            cerr << "smash error: bg: invalid arguments" << endl;
             this->exe = false;
             return;
         }
@@ -577,7 +571,7 @@ KillCommand::KillCommand(const char *cmd_line, JobsList *jobs) : BuiltInCommand(
             this->job_id = stoi(args[2]);
         }
         catch (invalid_argument& e){
-            cerr << "smash error: kill: job-id " << args[2] <<" does not exist" << endl;
+            cerr << "smash error: kill: invalid arguments" << endl;
             this->exe = false;
             return;
         }
@@ -857,7 +851,7 @@ void RedirectionCommand::handle_IO_Command_Before(const char *cmd_line) {
         if(err == -1){
             return;
         }
-        //change cmd_line for external simple
+        //change cmd_line for external simple.
         //has to come after handle cause handle needs the file to change stdout into
         final_cmd = this->handle_IO_Built_in_Simple(final_cmd, 2);
     }
@@ -1026,7 +1020,7 @@ SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : BuiltInCo
             this->job_id = stoi(args[1]);
         }
         catch (invalid_argument& e){
-            cerr << "smash error: setcore: job-id " << args[1] <<" does not exist" << endl;
+            cerr << "smash error: setcore: invalid arguments" << endl;
             this->exe = false;
             return;
         }
