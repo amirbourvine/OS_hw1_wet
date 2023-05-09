@@ -437,10 +437,12 @@ ForegroundCommand::ForegroundCommand(const char *cmd_line, JobsList *jobs) : Bui
             str += " does not exist";
             cerr << str << endl;
             this->exe = false;
+            return;
         }
         if(num != 2){
             cerr << "smash error: fg: invalid arguments" << endl;
             this->exe = false;
+            return;
         }
         return;
     }
