@@ -482,7 +482,15 @@ BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : Bui
         return;
     }
     if(num == 2){
-        int jobid = stoi(args[1]);
+        int jobid;
+        try {
+            jobid = stoi(args[1]);
+        }
+        catch (invalid_argument& e){
+            cerr << "smash error: bg: invalid arguments" << endl;
+            this->exe = false;
+            return;
+        }
         if(!(jobs->exsits(jobid))){
             std::string str = "smash error: bg: job-id ";
             str += args[1];
@@ -1010,22 +1018,27 @@ SetcoreCommand::SetcoreCommand(const char* cmd_line, JobsList *jobs) : BuiltInCo
     _removeBackgroundSign(cmd);//lose &
     int num = _parseCommandLine(cmd, args);
     if(num == 3){
-        this->job_id = stoi(args[1]);
+        try {
+            this->job_id = stoi(args[1]);
+        }
+        catch (invalid_argument& e){
+            cerr << "smash error: setcore: invalid arguments" << endl;
+            this->exe = false;
+            return;
+        }
         if(!jobs->exsits(this->job_id)){
             cerr << "smash error: setcore: job-id " << std::to_string(this->job_id) <<" does not exist" << endl;
             this->exe = false;
             return;
         }
-       this->core_num = stoi(args[2]);
-        /*
-        char path[256];
-        sprintf(path, "/proc/sys/kernel/core_pattern.%d", this->core_num);
-        int result = access(path, F_OK);
-        if (result != 0) {
-            cerr << "smash error: setcore: invalid core number" << endl;
-            this->exe = false;
+        try {
+            this->core_num = stoi(args[2]);
         }
-        */
+        catch (invalid_argument& e){
+            cerr << "smash error: setcore: invalid arguments" << endl;
+            this->exe = false;
+            return;
+        }
     }
     else{
         cerr << "smash error: setcore: invalid arguments" << endl;
@@ -1118,11 +1131,18 @@ ChmodCommand::ChmodCommand(const char *cmd_line) : BuiltInCommand(cmd_line){
     _removeBackgroundSign(cmd);//lose &
     int num = _parseCommandLine(cmd, args);
     if(num == 3){
-        mode = stoi(args[1]);
+        try {
+            mode = stoi(args[1]);
+        }
+        catch (invalid_argument& e){
+            cerr << "smash error: chmod: invalid arguments" << endl;
+            this->exe = false;
+            return;
+        }
         path_to_file = args[2];
     }
     else{
-        cerr << "smash error: gettype: invalid arguments" << endl;
+        cerr << "smash error: chmod: invalid arguments" << endl;
         this->exe = false;
     }
 }
@@ -1189,12 +1209,6 @@ TimeoutCommand::TimeoutCommand(const char *cmd_line, SmallShell* smash) : BuiltI
 
     this->command = strdup(cmd_line);
 
-   /* //Create a string of the command
-    std::string str_command = cmd;
-    for(int i = 0; i < 2; ++i)
-        str_command = str_command.substr(str_command.find_first_of(" \t")+1);
-
-    strcpy(command., str_command);*/
 }
 
 void TimeoutCommand::execute() {
