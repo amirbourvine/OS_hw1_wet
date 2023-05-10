@@ -490,24 +490,23 @@ BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : Bui
         }
         return;
     }
-    if(num == 2){
+    if(num >= 2) {
         int jobid;
         try {
             jobid = stoi(args[1]);
         }
-        catch (invalid_argument& e){
+        catch (invalid_argument &e) {
             cerr << "smash error: bg: invalid arguments" << endl;
             this->exe = false;
             return;
         }
-        if(!(jobs->exsits(jobid))){
+        if (!(jobs->exsits(jobid))) {
             std::string str = "smash error: bg: job-id ";
             str += args[1];
             str += " does not exist";
             cerr << str << endl;
             this->exe = false;
-        }
-        else {
+        } else {
             JobEntry *job = jobs->getJobById(jobid);
             if (job->stopped) {
                 this->job_id = jobid;
@@ -518,6 +517,11 @@ BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : Bui
                 cerr << str << endl;
                 this->exe = false;
             }
+        }
+        if(num != 2){
+            cerr << "smash error: bg: invalid arguments" << endl;
+            this->exe = false;
+            return;
         }
         return;
     }
