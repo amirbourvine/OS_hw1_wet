@@ -1096,7 +1096,7 @@ void GetFileTypeCommand::execute() {
     std::string file_type;
 
     if (lstat(path_to_file, &buf) == -1) {
-        perror("smash error: stat failed");;
+        perror("smash error: lstat failed");;
         return;
     }
 
