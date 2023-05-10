@@ -506,6 +506,7 @@ BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : Bui
             str += " does not exist";
             cerr << str << endl;
             this->exe = false;
+            return;
         } else {
             JobEntry *job = jobs->getJobById(jobid);
             if (job->stopped) {
@@ -516,6 +517,7 @@ BackgroundCommand::BackgroundCommand(const char *cmd_line, JobsList *jobs) : Bui
                 str += " is already running in the background";
                 cerr << str << endl;
                 this->exe = false;
+                return;
             }
         }
         if(num != 2){
